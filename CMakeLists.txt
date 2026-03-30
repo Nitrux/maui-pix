@@ -26,24 +26,16 @@ set(REQUIRED_KF_VERSION 5.240.0)
 find_package(ECM ${REQUIRED_KF_VERSION} REQUIRED NO_MODULE)
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake" ${ECM_MODULE_PATH})
 
-find_package(Qt6 ${REQUIRED_QT_VERSION} REQUIRED NO_MODULE COMPONENTS Core Qml Quick Positioning Concurrent)
+find_package(Qt6 ${REQUIRED_QT_VERSION} REQUIRED NO_MODULE COMPONENTS Core Qml Quick Positioning Concurrent Widgets)
 find_package(KF6 ${REQUIRED_KF_VERSION} REQUIRED COMPONENTS I18n CoreAddons KIO)
 
 find_package(MauiKit4 REQUIRED COMPONENTS FileBrowsing ImageTools)
 #find_package(CaskServer REQUIRED)
 
-if(ANDROID)
-    find_package(Qt6 ${REQUIRED_QT_VERSION} REQUIRED NO_MODULE COMPONENTS Multimedia Sql QuickControls2)
-elseif(UNIX)
-    find_package(Qt6 ${REQUIRED_QT_VERSION} REQUIRED NO_MODULE COMPONENTS Widgets)
-endif()
-
-if(UNIX AND NOT APPLE AND NOT ANDROID)
-    include(KDEInstallDirs)
-    include(KDECMakeSettings)
-    include(ECMInstallIcons)
-    include(ECMAddAppIcon)
-endif()
+include(KDEInstallDirs)
+include(KDECMakeSettings)
+include(ECMInstallIcons)
+include(ECMAddAppIcon)
 
 include(KDECompilerSettings NO_POLICY_SCOPE)
 include(KDEClangFormat)
@@ -91,9 +83,7 @@ add_subdirectory(src)
 
 ki18n_install(po)
 
-if(UNIX AND NOT APPLE AND NOT ANDROID)
-    install(FILES org.kde.pix.appdata.xml DESTINATION ${KDE_INSTALL_METAINFODIR})
-endif()
+install(FILES org.kde.pix.appdata.xml DESTINATION ${KDE_INSTALL_METAINFODIR})
 
 feature_summary(WHAT ALL FATAL_ON_MISSING_REQUIRED_PACKAGES)
 

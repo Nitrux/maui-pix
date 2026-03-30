@@ -32,12 +32,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <QPair>
 #include <QImageReader>
 
-#ifdef Q_OS_ANDROID
-#include <QGuiApplication>
-#include <MauiKit4/Core/mauiandroid.h>
-#else
 #include <QApplication>
-#endif
 
 #include "../pix_version.h"
 
@@ -45,10 +40,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <MauiKit4/FileBrowsing/fmstatic.h>
 
 #include <MauiKit4/ImageTools/moduleinfo.h>
-
-#ifdef Q_OS_MACOS
-#include <MauiKit3/Core/mauimacos.h>
-#endif
 
 #include <KLocalizedString>
 
@@ -99,11 +90,7 @@ static const QPair<QString, QList<QUrl>> openFiles(const QStringList &files)
 
 Q_DECL_EXPORT int main(int argc, char *argv[])
 {
-#ifdef Q_OS_ANDROID
-    QGuiApplication app(argc, argv);
-#else
     QApplication app(argc, argv);
-#endif
 
     QImageReader::setAllocationLimit(2000);
 
@@ -135,13 +122,11 @@ Q_DECL_EXPORT int main(int argc, char *argv[])
     const auto ITData = MauiKitImageTools::aboutData();
     about.addComponent(ITData.name(), MauiKitImageTools::buildVersion(), ITData.version(), ITData.webAddress());
 
-#ifndef Q_OS_ANDROID
     const auto OCRData = MauiKitImageTools::tesseractData();
     about.addComponent(OCRData.name(), OCRData.description(), OCRData.version(), OCRData.webAddress());
 
     const auto openCVData = MauiKitImageTools::opencvData();
     about.addComponent(openCVData.name(), openCVData.description(), openCVData.version(), openCVData.webAddress());
-#endif
     KAboutData::setApplicationData(about);
     MauiApp::instance()->setIconName("qrc:/assets/pix.png");
 
@@ -182,13 +167,7 @@ Q_DECL_EXPORT int main(int argc, char *argv[])
 
 //    QScopedPointer<ScreenshotInhibit> screenshot(new ScreenshotInhibit(qApp->desktopFileName()));
 //    screenshot->blacklist();
-#ifdef Q_OS_ANDROID
-    if (!MAUIAndroid::checkRunTimePermissions({"android.permission.MANAGE_EXTERNAL_STORAGE",
-                                               "android.permission.WRITE_EXTERNAL_STORAGE"}))
-        qWarning() << "Failed to get WRITE and READ permissions";
-#endif
 
-#if (defined Q_OS_LINUX || defined Q_OS_FREEBSD) && !defined Q_OS_ANDROID
     bool windowed = parser.isSet(newWindow);
 
     if (AppInstance::attachToExistingInstance(arguments, windowed))
@@ -198,7 +177,6 @@ Q_DECL_EXPORT int main(int argc, char *argv[])
     }
 
     AppInstance::registerService();
-#endif
 
     auto server = std::make_unique<Server>();
 
@@ -249,11 +227,6 @@ Q_DECL_EXPORT int main(int argc, char *argv[])
     qmlRegisterType<FileWatcher>(PIX_URI, 1, 0, "FileWatcher");
 
     engine.load(url);
-
-#ifdef Q_OS_MACOS
-    //    MAUIMacOS::removeTitlebarFromWindow();
-    //    MauiApp::instance()->setEnableCSD(true); //for now index can not handle cloud accounts
-#endif
 
     return app.exec();
 }
