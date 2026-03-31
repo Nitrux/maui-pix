@@ -26,23 +26,19 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import QtQuick
 import QtQuick.Controls
-import QtQuick.Layouts
-import QtQuick.Effects
-import QtQuick.Window
 
 import org.mauikit.controls as Maui
-import org.mauikit.filebrowsing as FB
-import org.mauikit.imagetools as IT
 import org.maui.pix as Pix
 
 import "Folders"
-import "Gallery"
-import "Tags"
-import ".."
 
-Maui.SideBarView
+Maui.Page
 {
     id: control
+    objectName: "CollectionView"
+
+    background: null
+    Maui.Controls.showCSD: true
 
     focus: true
     focusPolicy: Qt.StrongFocus
@@ -69,96 +65,81 @@ Maui.SideBarView
         delayed: true
     }
 
-    sideBar.resizeable: false
-    sideBar.preferredWidth: 200
-    sideBar.autoHide: true
-    sideBar.autoShow: true
-    sideBar.content: Sidebar
+    readonly property Component extraOptions: (_foldersView.currentItem && _foldersView.currentItem.hasOwnProperty("extraOptions"))
+                                              ? _foldersView.currentItem.extraOptions
+                                              : null
+
+    headBar.leftContent: [
+        ToolButton
+        {
+            enabled: _foldersView.depth > 1
+            icon.name: "go-previous"
+            onClicked: _foldersView.pop()
+        },
+
+        ToolButton
+        {
+            icon.name: "folder-pictures"
+            onClicked: ApplicationWindow.window.showGallery()
+        },
+
+        ToolButton
+        {
+            icon.name: "folder"
+            onClicked: ApplicationWindow.window.showCollections()
+        },
+
+        ToolSeparator {},
+
+        Maui.SearchField
+        {
+            placeholderText: i18n("Search pictures")
+            implicitWidth: 250
+            onAccepted: _foldersView.search(text)
+            onCleared: _foldersView.clearSearch()
+        }
+    ]
+
+    headBar.rightContent: [
+        Loader
+        {
+            active: control.extraOptions !== null
+            sourceComponent: control.extraOptions
+        },
+
+        Maui.ToolButtonMenu
+        {
+            icon.name: "overflow-menu"
+
+            MenuItem
+            {
+                text: i18n("Preferences")
+                icon.name: "settings-configure"
+                onTriggered: ApplicationWindow.window.openSettingsDialog()
+            }
+
+            MenuItem
+            {
+                text: i18n("About")
+                icon.name: "documentinfo"
+                onTriggered: Maui.App.aboutDialog()
+            }
+        }
+    ]
+
+    Item
     {
+        id: _contentArea
         anchors.fill: parent
-        anchors.margins: Maui.Style.contentMargins
-        anchors.rightMargin: 0
-    }
-
-    Maui.PageLayout
-    {
-        id: swipeView
-        anchors.fill: parent
-
-        focus: false
-
-        altHeader: Maui.Handy.isMobile
-
-        flickable: _foldersView.currentItem.flickable
 
         Binding
         {
             when: selectionBox.visible
-            target: swipeView.flickable
+            target: _foldersView.flickable
             property: "bottomMargin"
             value: selectionBox.implicitHeight
             restoreMode: Binding.RestoreBindingOrValue
         }
-
-        Maui.Controls.showCSD: true
-
-        split: width < 600
-        splitSection: Maui.PageLayout.Section.Middle
-        headerMargins: Maui.Style.contentMargins
-        middleContent: Loader
-        {
-            id: _searchFieldLoader
-            Layout.fillWidth: true
-            Layout.maximumWidth: 500
-            Layout.alignment: Qt.AlignCenter
-            sourceComponent: _foldersView.currentItem && _foldersView.currentItem.hasOwnProperty("searchFieldComponent") ? _foldersView.currentItem.searchFieldComponent : null
-        }
-
-        rightContent: [
-            Loader
-            {
-                Layout.fillWidth: true
-                Layout.maximumWidth: 500
-                Layout.alignment: Qt.AlignCenter
-                sourceComponent: _foldersView.currentItem && _foldersView.currentItem.hasOwnProperty("extraOptions") ? _foldersView.currentItem.extraOptions : null
-            },
-
-            Loader
-            {
-                asynchronous: true
-                sourceComponent: _mainMenuComponent
-            }]
-
-        leftContent: [
-            ToolButton
-            {
-                id: _sideBarButton
-                visible: control.sideBar.collapsed || !control.sideBar.visible
-
-                icon.name: sideBar.visible ? "sidebar-collapse" : "sidebar-expand"
-                onClicked: sideBar.toggle()
-                checked: sideBar.visible
-                ToolTip.delay: 1000
-                ToolTip.timeout: 5000
-                ToolTip.visible: hovered
-                ToolTip.text: i18n("Toggle sidebar")
-            },
-
-            ToolButton
-            {
-                id: _goBackButton
-                icon.name: "go-previous"
-                visible: _foldersView.depth > 1
-                onClicked:
-                {
-                    if(_foldersView.depth > 1)
-                    {
-                        _foldersView.pop()
-                        return;
-                    }
-                }
-            }
-        ]
 
         FoldersView
         {
@@ -173,19 +154,19 @@ Maui.SideBarView
             DragHandler
             {
                 target: _floatingViewer
-                xAxis.maximum: swipeView.width - _floatingViewer.width
+                xAxis.maximum: _contentArea.width - _floatingViewer.width
                 xAxis.minimum: 0
 
-                yAxis.maximum : swipeView.height - _floatingViewer.height
+                yAxis.maximum: _contentArea.height - _floatingViewer.height
                 yAxis.minimum: 0
 
                 onActiveChanged:
                 {
                     if(!active)
                     {
-                        let newX = Math.abs(_floatingViewer.x - (swipeView.width - _floatingViewer.implicitWidth - 20))
+                        let newX = Math.abs(_floatingViewer.x - (_contentArea.width - _floatingViewer.implicitWidth - 20))
                         _floatingViewer.y = Qt.binding(()=> { return _floatingViewer.parent.height - _floatingViewer.implicitHeight - 20})
-                        _floatingViewer.x = Qt.binding(()=> { return (_floatingViewer.parent.width - _floatingViewer.implicitWidth - 20 - newX) < 0 ? 20 : swipeView.width - _floatingViewer.implicitWidth - 20 - newX})
+                        _floatingViewer.x = Qt.binding(()=> { return (_floatingViewer.parent.width - _floatingViewer.implicitWidth - 20 - newX) < 0 ? 20 : _contentArea.width - _floatingViewer.implicitWidth - 20 - newX})
                     }
                 }
             }
@@ -197,8 +178,18 @@ Maui.SideBarView
         _foldersView.openFolder(url, filters)
     }
 
-    function focusSearchField()
+    function goBack()
     {
-        _searchFieldLoader.item.forceActiveFocus()
+        _foldersView.pop()
+    }
+
+    function search(text)
+    {
+        _foldersView.search(text)
+    }
+
+    function clearSearch()
+    {
+        _foldersView.clearSearch()
     }
 }

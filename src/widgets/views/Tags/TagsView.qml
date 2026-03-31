@@ -26,7 +26,7 @@ PixGrid
 
     holder.title: i18n("No Pics in %1!", currentTag)
     holder.body: i18n("There're no pics associated with the tag")
-    holder.emoji: "qrc:/assets/add-image.svg"
+    holder.emoji: "tag"
 
     headBar.visible: true
 

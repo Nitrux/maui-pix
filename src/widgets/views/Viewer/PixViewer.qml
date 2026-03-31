@@ -48,6 +48,9 @@ Maui.Page
                         }
                     }
 
+    signal closeRequested()
+    signal editRequested(string url)
+
     readonly property alias viewer : viewer
     readonly property alias holder : holder
 
@@ -66,49 +69,59 @@ Maui.Page
         model: viewer.model
     }
 
-    onGoBackTriggered: control.pop()
+    onGoBackTriggered: control.closeRequested()
 
     title: currentPic.title
-    showTitle: root.isWide
+    showTitle: true
 
+    Maui.Controls.showCSD: true
     altHeader: Maui.Handy.isMobile
     floatingHeader: true
     autoHideHeader: viewer.imageZooming || viewer.focusedMode
     headerMargins: Maui.Style.contentMargins
 
-    headBar.rightContent: [
+    headBar.leftContent: [
+        ToolButton
+        {
+            icon.name: "go-previous"
+            onClicked: control.closeRequested()
+        },
+
+        ToolSeparator {
+            bottomPadding: 10
+            topPadding: 10
+        },
 
         ToolButton
         {
             icon.name: "view-fullscreen"
-            onClicked: toggleFullscreen()
-            checked: fullScreen
+            checked: root.fullScreen
+            onClicked: root.fullScreen ? root.showNormal() : root.showFullScreen()
+        },
+
+        ToolButton
+        {
+            icon.name: "draw-freehand"
+            onClicked: control.editRequested(control.currentPic.url)
         }
     ]
 
-    headBar.leftContent: Loader
+    headBar.rightContent: Maui.ToolButtonMenu
     {
-        active: (!Maui.Handy.isMobile) && control.viewer.count > 1 //only show footbar control for desktop mode
-        asynchronous: true
-        sourceComponent:  Maui.ToolActions
+        icon.name: "overflow-menu"
+
+        MenuItem
         {
-            expanded: true
-            autoExclusive: false
-            checkable: false
-            display: ToolButton.IconOnly
+            text: i18n("Preferences")
+            icon.name: "settings-configure"
+            onTriggered: ApplicationWindow.window.openSettingsDialog()
+        }
 
-            Action
-            {
-                text: i18n("Previous")
-                icon.name: "go-previous"
-                onTriggered: previous()
-            }
-
-            Action
-            {
-                icon.name: "go-next"
-                onTriggered: next()
-            }
+        MenuItem
+        {
+            text: i18n("About")
+            icon.name: "documentinfo"
+            onTriggered: Maui.App.aboutDialog()
         }
     }
 
@@ -206,7 +219,7 @@ Maui.Page
         id: holder
         visible: viewer.count === 0 /*|| viewer.currentItem.status !== Image.Ready*/
         anchors.fill: parent
-        emoji: "qrc:/assets/add-image.svg"
+        emoji: "image-x-generic"
         isMask: true
         title : i18n("No Pics!")
         body: i18n("Open an image from your collection")
@@ -225,87 +238,74 @@ Maui.Page
             Layout.fillHeight: true
             Layout.fillWidth: true
 
-            Loader
+            MouseArea
             {
-                id: _actionsBarLoader
-                visible: status == Loader.Ready
-                asynchronous: true
+                id: _prevMouseArea
+                visible: viewer.count > 1
+                anchors.left: parent.left
+                anchors.top: parent.top
+                anchors.bottom: parent.bottom
+                width: Math.round(parent.width * 0.08)
+                propagateComposedEvents: true
+                onClicked: control.previous()
 
-                anchors.bottom: galleryRoll.top
-                anchors.horizontalCenter: parent.horizontalCenter
-                anchors.margins: Maui.Style.space.big
+                HoverHandler { id: _prevHover }
 
-                sourceComponent: Pane
+                Rectangle
                 {
-                    id: _pane
-                    Maui.Theme.colorSet: Maui.Theme.Header
+                    opacity: _prevHover.hovered ? 1 : 0
+                    Behavior on opacity { NumberAnimation { duration: Maui.Style.units.shortDuration } }
+                    anchors.left: parent.left
+                    anchors.leftMargin: Maui.Style.space.small
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: Maui.Style.iconSizes.big + Maui.Style.space.medium
+                    height: width
+                    radius: height / 2
+                    color: _prevMouseArea.pressed ? Maui.Theme.highlightColor : Qt.rgba(0, 0, 0, 0.4)
 
-                    background: Rectangle
+                    Maui.Icon
                     {
-                        radius: Maui.Style.radiusV
-                        color: Maui.Theme.alternateBackgroundColor
-
-                        layer.enabled: GraphicsInfo.api !== GraphicsInfo.Software
-                        layer.effect: MultiEffect
-                        {
-                            autoPaddingEnabled: true
-                            shadowEnabled: true
-                            shadowColor: "#000000"
-                        }
+                        anchors.centerIn: parent
+                        source: "go-previous"
+                        color: "white"
+                        height: Maui.Style.iconSizes.medium
+                        width: height
                     }
+                }
+            }
 
-                    ScaleAnimator on scale
+            MouseArea
+            {
+                id: _nextMouseArea
+                visible: viewer.count > 1
+                anchors.right: parent.right
+                anchors.top: parent.top
+                anchors.bottom: parent.bottom
+                width: Math.round(parent.width * 0.08)
+                propagateComposedEvents: true
+                onClicked: control.next()
+
+                HoverHandler { id: _nextHover }
+
+                Rectangle
+                {
+                    opacity: _nextHover.hovered ? 1 : 0
+                    Behavior on opacity { NumberAnimation { duration: Maui.Style.units.shortDuration } }
+                    anchors.right: parent.right
+                    anchors.rightMargin: Maui.Style.space.small
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: Maui.Style.iconSizes.big + Maui.Style.space.medium
+                    height: width
+                    radius: height / 2
+                    color: _nextMouseArea.pressed ? Maui.Theme.highlightColor : Qt.rgba(0, 0, 0, 0.4)
+
+                    Maui.Icon
                     {
-                        from: 0
-                        to: 1
-                        duration: Maui.Style.units.longDuration
-                        running: visible
-                        easing.type: Easing.OutInQuad
-                    }
-
-                    OpacityAnimator on opacity
-                    {
-                        from: 0
-                        to: 1
-                        duration: Maui.Style.units.longDuration
-                        running: visible
-                    }
-
-                    contentItem: Row
-                    {
-                        spacing: Maui.Style.defaultSpacing
-
-                        FB.FavButton
-                        {
-                            url: currentPic.url
-                            flat: false
-                        }
-
-                        ToolButton
-                        {
-                            icon.name: "document-share"
-                            flat: false
-                            onClicked:
-                            {
-                                Maui.Platform.shareFiles([control.currentPic.url])
-                            }
-                        }
-
-                        ToolButton
-                        {
-                            icon.name: "draw-freehand"
-                            flat: false
-                            onClicked:
-                            {
-                                openEditor(control.currentPic.url, _stackView)
-                            }
-                        }
-
-                        ToolButton
-                        {
-                            icon.name: "overflow-menu"
-                            onClicked: _picMenu.show()
-                        }
+                        anchors.centerIn: parent
+                        source: "go-next"
+                        color: "white"
+                        height: Maui.Style.iconSizes.medium
+                        width: height
                     }
                 }
             }
@@ -316,7 +316,6 @@ Maui.Page
 
                 asynchronous: true
                 active: viewerSettings.previewBarVisible
-                // anchors.bottom: parent.bottom
                 width: parent.width
                 height: active ? Math.min(60, Math.max(parent.height * 0.12, 60)) : 0
                 y: viewer.imageZooming || viewer.focusedMode ? parent.height :  parent.height - height
@@ -439,7 +438,6 @@ Maui.Page
 
     function view(index : int)
     {
-        // if(control.viewer.count > 0 && index >= 0 && index < control.viewer.count)
         {
             control.currentPicIndex = index
             control.currentPic = control.model.get(control.currentPicIndex)

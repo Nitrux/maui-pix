@@ -5,6 +5,7 @@ import QtQuick.Controls
 
 import "views"
 import "views/Viewer"
+import "views/Gallery"
 
 import org.mauikit.controls as Maui
 import org.mauikit.filebrowsing as FB
@@ -27,6 +28,7 @@ Item
 
     readonly property bool editorVisible : _stackView.currentItem.objectName === "ImageEditor"
     readonly property bool viewerVisible : _stackView.currentItem.objectName === "Viewer"
+    readonly property var mainGalleryList: Pix.Collection.allImagesModel
 
     Action
     {
@@ -38,35 +40,8 @@ Item
 
     Component
     {
-        id: _mainMenuComponent
-
-        Maui.ToolButtonMenu
-        {
-            id: _menu
-            icon.name: "overflow-menu"
-
-            MenuItem
-            {
-                text: i18n("Open")
-                icon.name: "folder-open"
-                onTriggered: openFileDialog()
-            }
-
-            MenuSeparator {}
-
-
-            MenuItem
-            {
-                action: _openSettingsAction
-            }
-
-            MenuItem
-            {
-                text: i18n("About")
-                icon.name: "documentinfo"
-                onTriggered: Maui.App.aboutDialog()
-            }
-        }
+        id: _galleryViewComponent
+        GalleryView {}
     }
 
     StackView
@@ -74,6 +49,7 @@ Item
         id: _stackView
         anchors.fill: parent
         objectName: "MainView"
+        background: null
 
         focus: false
         focusPolicy: Qt.NoFocus
@@ -95,20 +71,17 @@ Item
             _stackView.currentItem.forceActiveFocus()
         }
 
-        initialItem: _pixViewer
+        initialItem: _galleryViewComponent
 
         PixViewer
         {
             id: _pixViewer
             objectName: "Viewer"
             readonly property bool active: StackView.status === StackView.Active
-            Maui.Controls.showCSD: true
+            background: null
 
-            headBar.farRightContent: Loader
-            {
-                asynchronous: true
-                sourceComponent: _mainMenuComponent
-            }
+            onCloseRequested: control.toggleViewer()
+            onEditRequested: (url) => control.openEditor(url, _stackView)
         }
     }
 
@@ -286,7 +259,7 @@ Item
                 {
                     anchors.fill: parent
                     visible: true
-                    emoji: "qrc:/img/assets/add-image.svg"
+                    emoji: "folder-pictures"
                     emojiSize: Maui.Style.iconSizes.huge
                     title: i18n("Open images")
                     body: i18n("Drag and drop images here.")
@@ -462,19 +435,31 @@ Item
     {
         if(_pixViewer.active)
         {
-            if(_stackView.depth === 1)
-            {
-                _stackView.replace(_pixViewer, _collectionViewComponent)
-
-            }else
-            {
-                _stackView.pop()
-            }
-
+            _stackView.pop()
         }else
         {
             _stackView.push(_pixViewer)
         }
+
+        _stackView.currentItem.forceActiveFocus()
+    }
+
+    function showGallery()
+    {
+        _stackView.pop(null)
+        _stackView.currentItem.forceActiveFocus()
+    }
+
+    function showCollections()
+    {
+        if(_stackView.currentItem.objectName === "CollectionView")
+            return
+
+        if(_pixViewer.active)
+            _stackView.pop()
+
+        if(_stackView.currentItem.objectName !== "CollectionView")
+            _stackView.push(_collectionViewComponent)
 
         _stackView.currentItem.forceActiveFocus()
     }
@@ -500,7 +485,12 @@ Item
     {
         if(pixViewer.active)
         {
-            toggleViewer()
+            _stackView.pop()
+        }
+
+        if(_stackView.currentItem.objectName !== "CollectionView")
+        {
+            _stackView.push(_collectionViewComponent)
         }
 
         _stackView.currentItem.openFolder(url, filters)

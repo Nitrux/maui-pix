@@ -26,7 +26,6 @@ Maui.SettingsPage
             {
                 anchors.fill: parent
                 source:  "://assets/paper_texture.png"
-                // opacity: 0.5
             }
         }
 

@@ -32,7 +32,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <QPair>
 #include <QImageReader>
 
-#include <QApplication>
+#include <QGuiApplication>
+#include <QSurfaceFormat>
 
 #include "../pix_version.h"
 
@@ -90,7 +91,11 @@ static const QPair<QString, QList<QUrl>> openFiles(const QStringList &files)
 
 Q_DECL_EXPORT int main(int argc, char *argv[])
 {
-    QApplication app(argc, argv);
+    QSurfaceFormat format;
+    format.setAlphaBufferSize(8);
+    QSurfaceFormat::setDefaultFormat(format);
+
+    QGuiApplication app(argc, argv);
 
     QImageReader::setAllocationLimit(2000);
 
@@ -128,7 +133,7 @@ Q_DECL_EXPORT int main(int argc, char *argv[])
     const auto openCVData = MauiKitImageTools::opencvData();
     about.addComponent(openCVData.name(), openCVData.description(), openCVData.version(), openCVData.webAddress());
     KAboutData::setApplicationData(about);
-    MauiApp::instance()->setIconName("qrc:/assets/pix.png");
+    MauiApp::instance()->setIconName("pix");
 
     QCommandLineOption newWindow(QStringList() << "w" << "window", "Open in window.", "windowed", "true");
     QCommandLineOption viewCommand(QStringList() << "o" << "o", "View images or folder", "url1,url2,...");

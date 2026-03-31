@@ -136,7 +136,6 @@ Item
         Repeater
         {
             id: _repeater
-            // model: _ocr.wordBoxes
             model: switch(viewerSettings.ocrBlockType)
                    {
                    case 0: return _ocr.wordBoxes;
@@ -144,8 +143,6 @@ Item
                    case 2: return _ocr.lineBoxes;
                    default: return _ocr.wordBoxes;
                    }
-
-            // model: _ocr.lineBoxes
 
             delegate: MouseArea
             {
@@ -183,7 +180,6 @@ Item
                     width: parent.width+6
                     anchors.centerIn: parent
                     radius: 0
-                    // color: Maui.Theme.linkBackgroundColor
                     visible: opacity > 0
 
                     Behavior on opacity
@@ -200,7 +196,6 @@ Item
                         from: "transparent"
                         to: Maui.Theme.linkBackgroundColor
                         duration: Maui.Style.units.longDuration
-                        // running: _ocr.ready
                         easing.type: Easing.InOutQuad
                         onFinished:
                         {
@@ -223,10 +218,6 @@ Item
                                    _selectionMenu.show()
                                }
                            }
-
-                // Connections
-                // {
-                // }
 
                 ToolTip.delay: 1000
                 ToolTip.timeout: 5000

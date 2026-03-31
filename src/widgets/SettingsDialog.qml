@@ -13,7 +13,6 @@ Maui.SettingsDialog
     Maui.SectionGroup
     {
         title: i18n("Behavior")
-        //        description: i18n("Configure the app behaviour.")
 
         Maui.FlexSectionItem
         {
@@ -32,7 +31,6 @@ Maui.SettingsDialog
     Maui.SectionGroup
     {
         title: i18n("Collection")
-        //        description: i18n("Configure the app plugins and look & feel.")
 
         Maui.FlexSectionItem
         {
@@ -78,7 +76,6 @@ Maui.SettingsDialog
     Maui.SectionGroup
     {
         title: i18n("Viewer")
-        //        description: i18n("Adjust the viewer panels and settings.")
 
         Maui.FlexSectionItem
         {
@@ -96,7 +93,6 @@ Maui.SettingsDialog
         Maui.FlexSectionItem
         {
             label1.text: i18n("Preview Bar")
-            //            label2.text: i18n("Show small thumbnail previews in the image viewer.")
             Switch
             {
                 checkable: true
@@ -109,7 +105,6 @@ Maui.SettingsDialog
         {
             label1.text: i18n("Text Detection")
             label2.text: i18n("Configure settings for text detection in images.")
-            // enabled: viewerSettings.enableOCR
 
             ToolButton
             {
@@ -123,7 +118,6 @@ Maui.SettingsDialog
     Maui.SectionGroup
     {
         title: i18n("Sources")
-        //        description: i18n("Add new sources to manage and browse your image collection.")
 
         ColumnLayout
         {

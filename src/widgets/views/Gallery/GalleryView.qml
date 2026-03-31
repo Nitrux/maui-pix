@@ -16,20 +16,57 @@ import "../../../view_models"
 PixGrid
 {
     id: control
-    holder.emoji: "qrc:/assets/image-multiple.svg"
+    list: Pix.Collection.allImagesModel
+    background: null
+    Maui.Controls.showCSD: true
+
+    holder.emoji: "image-x-generic"
     holder.title : i18n("No Pics!")
-    holder.body: mainGalleryList.status === Pix.GalleryList.Error ? mainGalleryList.error : i18n("Nothing here. You can add new sources or open an image.")
-    holder.actions:[
-        Action
+    holder.body: list.status === Pix.GalleryList.Error ? list.error : i18n("Nothing here. You can add new sources or open an image.")
+
+    headBar.leftContent: [
+        ToolButton
         {
-            text: i18n("Open")
-            onTriggered: openFileDialog()
+            icon.name: "folder-pictures"
+            onClicked: ApplicationWindow.window.showGallery()
         },
 
-        Action
+        ToolButton
         {
-            text: i18n("Add sources")
-            onTriggered: openSettingsDialog()
+            icon.name: "folder"
+            onClicked: ApplicationWindow.window.showCollections()
+        },
+
+        ToolSeparator {
+            bottomPadding: 10
+            topPadding: 10
+        },
+
+        Maui.SearchField
+        {
+            placeholderText: i18n("Search pictures")
+            implicitWidth: 250
+            onAccepted: control.search(text)
+            onCleared: control.clearSearch()
         }
     ]
+
+    headBar.rightContent: Maui.ToolButtonMenu
+    {
+        icon.name: "overflow-menu"
+
+        MenuItem
+        {
+            text: i18n("Preferences")
+            icon.name: "settings-configure"
+            onTriggered: ApplicationWindow.window.openSettingsDialog()
+        }
+
+        MenuItem
+        {
+            text: i18n("About")
+            icon.name: "documentinfo"
+            onTriggered: Maui.App.aboutDialog()
+        }
+    }
 }

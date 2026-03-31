@@ -9,13 +9,12 @@ import org.mauikit.filebrowsing as FB
 import org.maui.pix
 
 import "../../../view_models"
-import "../.."
-import"../Gallery"
 
 StackView
 {
     id: control
     objectName: "FoldersView"
+    background: null
 
     Keys.enabled: true
     Keys.forwardTo: currentItem
@@ -33,11 +32,6 @@ StackView
                             event.accepted = true
                         }
 
-                        if(event.key == Qt.Key_F && (event.modifiers & Qt.ControlModifier))
-                        {
-                            focusSearchField()
-                            event.accepted = true
-                        }
                     }
 
     readonly property string currentFolder : currentItem.currentFolder
@@ -59,32 +53,11 @@ StackView
         id: _foldersPage
         readonly property string currentFolder : "collection:///"
 
+        background: null
         Maui.Theme.inherit: false
         Maui.Theme.colorGroup: Maui.Theme.View
         flickable: _foldersGrid.flickable
         headBar.visible: false
-
-        property Component extraOptions : ToolButton
-        {
-            text: i18n("New Folder")
-            onClicked:  _foldersPage.headBar.Maui.Theme.printColorTable()
-        }
-
-        property Component searchFieldComponent : Maui.SearchField
-        {
-            id: _searchField
-            placeholderText: i18np("Filter %1 folder", "Filter %1 folders", foldersList.count)
-            onAccepted:
-            {
-                folderModel.filters = text.split(",")
-                _foldersGrid.forceActiveFocus()
-            }
-
-            onCleared: folderModel.clearFilters()
-
-            Keys.enabled: true
-            Keys.onEscapePressed: _foldersGrid.forceActiveFocus()
-        }
 
         Keys.enabled: true
         Keys.forwardTo: _foldersGrid
@@ -105,7 +78,7 @@ StackView
 
             padding: 0
 
-            holder.emoji: "qrc:/assets/view-preview.svg"
+            holder.emoji: "view-preview"
             holder.title : foldersList.count === 0 ?
                                i18n("No Folders!") : i18n("Nothing Here!")
             holder.body: foldersList.count === 0 ? i18n("Add new image sources.") : i18n("Try something different.")
@@ -173,6 +146,16 @@ StackView
                     Drag.keys: ["text/uri-list"]
                     Drag.mimeData: Drag.active ? { "text/uri-list": model.path } : {}
 
+                    Rectangle
+                    {
+                        anchors.fill: parent
+                        color: "transparent"
+                        radius: Maui.Style.radiusV
+                        border.width: (parent.hovered || parent.isCurrentItem) ? 0 : 1
+                        border.color: Qt.rgba(Maui.Theme.textColor.r, Maui.Theme.textColor.g, Maui.Theme.textColor.b, 0.15)
+                        z: 1
+                    }
+
                 onClicked:
                 {
                     _foldersGrid.currentIndex = index
@@ -194,6 +177,19 @@ StackView
                 }
             }
         }
+
+        function search(text)
+        {
+            if(text.includes(","))
+                folderModel.filters = text.split(",")
+            else
+                folderModel.filter = text
+        }
+
+        function clearSearch()
+        {
+            folderModel.clearFilters()
+        }
     }
 }
 
@@ -207,6 +203,7 @@ Component
         property string currentFolder
         readonly property var folderInfo : list.getFolderInfo(currentFolder)
 
+        background: null
         headBar.visible: false
         title: control.folderInfo ? control.folderInfo.label : ""
 
@@ -214,7 +211,7 @@ Component
         list.urls: [currentFolder]
         list.activeGeolocationTags: browserSettings.gpsTags && !currentFolder.startsWith("gps:///")
 
-        holder.emoji: "qrc:/assets/add-image.svg"
+        holder.emoji: "folder-pictures"
         holder.title : i18n("Folder is empty!")
         holder.body: i18n("There're no images in this folder. %1", list.urls)
 
@@ -330,5 +327,17 @@ function openFolder(url, filters)
     }
 
     control.forceActiveFocus()
+}
+
+function search(text)
+{
+    if(currentItem && currentItem.hasOwnProperty("search"))
+        currentItem.search(text)
+}
+
+function clearSearch()
+{
+    if(currentItem && currentItem.hasOwnProperty("clearSearch"))
+        currentItem.clearSearch()
 }
 }

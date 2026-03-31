@@ -68,7 +68,6 @@ ScrollView
 
     function position(index)
     {
-        // rollList.setCurrentIndex(index)
         rollList.positionViewAtIndex(index, ListView.Center)
     }
 }

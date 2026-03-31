@@ -63,7 +63,7 @@ StackView
             }
 
             holder.visible: count === 0
-            holder.emoji: "qrc:/assets/image-multiple.svg"
+            holder.emoji: "image-x-generic"
             holder.title :  i18n("No Pics!")
             holder.body: mainGalleryList.status === Pix.GalleryList.Error ? mainGalleryList.error : (list.count > 0 ? i18n("No results found.") : i18n("Nothing here. You can add new sources or open an image."))
         }
@@ -140,7 +140,7 @@ StackView
                 currentIndex: -1
 
                 holder.visible: _gridView.count === 0
-                holder.emoji: i18n("qrc:/assets/add-image.svg")
+                holder.emoji: "tag"
                 holder.title :i18n("No Tags!")
                 holder.body: i18n("You can create new tags to organize your gallery")
                 holder.actions: _newTagAction
@@ -209,7 +209,6 @@ StackView
                             {
                                 id: _tagsRow
                                 Layout.fillWidth: true
-                                //            height: visible ? 80 : 0
                                 spacing: Maui.Style.space.medium
 
                                 Maui.Chip
@@ -217,10 +216,8 @@ StackView
                                     iconSource: "media-playback-start"
                                     text: i18n("Animated")
                                     color: "#43a047"
-                                    //                label2.text: i18n ("GIF, AVIF")
                                     onClicked:
                                     {
-                                        //                    _frontPage.model.filterRole = "format"
                                         populateByFilter(["gif","avif"])
                                     }
                                 }
@@ -278,7 +275,6 @@ StackView
                                     iconSource: "animal"
                                     text: i18n("Animals")
                                     color: "#3949ab"
-                                    //                label2.text: i18n ("GIF, AVIF")
                                 }
 
                             }

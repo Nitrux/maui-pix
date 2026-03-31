@@ -23,8 +23,17 @@ Maui.GridBrowserDelegate
 
     fillMode: control.fit ? Image.PreserveAspectFit : Image.PreserveAspectCrop
     template.labelSizeHint: 40
-    //    template.alignment: Qt.AlignLeft
     template.iconComponent: (model.format === "gif" || model.format === "avif") && control.hovered ? _animatedComponent :  _iconComponent
+
+    Rectangle
+    {
+        anchors.fill: parent
+        color: "transparent"
+        radius: control.radius
+        border.width: (control.hovered || control.isCurrentItem || control.checked) ? 0 : 1
+        border.color: Qt.rgba(Maui.Theme.textColor.r, Maui.Theme.textColor.g, Maui.Theme.textColor.b, 0.15)
+        z: 1
+    }
 
     Loader
     {

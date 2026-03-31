@@ -246,7 +246,6 @@ Item
             readonly property bool isCurrentItem: ListView.isCurrentItem
             readonly property bool zooming: item.zooming
             readonly property bool isAnimated : model.format === "gif" || model.format === "avif"
-            //            active : ListView.isCurrentItem
             asynchronous: true
 
             sourceComponent: isAnimated ? _animatedImgComponent : _imgComponent
@@ -313,19 +312,6 @@ Item
         }
     }
 
-
-    // MouseArea
-    // {
-    //     enabled: viewerSettings.previewBarVisible && galleryRoll.rollList.count > 1
-    //     anchors.fill: parent
-    //     onPressed: (mouse) =>
-    //                {
-    //                    galleryRollBg.visible = !galleryRollBg.visible
-    //                    mouse.accepted = false
-    //                }
-    //     propagateComposedEvents: true
-    //     preventStealing: false
-    // }
 
     function appendPics(pics)
     {

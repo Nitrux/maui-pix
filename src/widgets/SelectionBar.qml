@@ -23,14 +23,6 @@ Maui.SelectionBar
         clear()
     }
 
-    // onVisibleChanged:
-    // {
-    //     if(!visible)
-    //     {
-    //         root.selectionMode = false
-    //     }
-    // }
-
     listDelegate: Maui.ListBrowserDelegate
     {
         width: ListView.view.width
@@ -39,7 +31,6 @@ Maui.SelectionBar
         label1.text: model.title
         label2.text: model.url
         imageSource: model.url
-        // iconSizeHint: 48
         iconSizeHint: Maui.Style.iconSizes.big
         height: Maui.Style.iconSizes.big + Maui.Style.space.big
         checked: true
@@ -68,25 +59,8 @@ Maui.SelectionBar
         }
     }
 
-    Action
-    {
-        text: i18n("Share")
-        icon.name: "document-share"
-        onTriggered:
-        {
-            Maui.Platform.shareFiles(control.uris)
-        }
-    }
-
     hiddenActions:
         [
-        Action
-        {
-            text: i18n("Un/Fav")
-            icon.name: "love"
-            onTriggered: VIEWER.fav(control.uris)
-        },
-
         Action
         {
             text: i18n("Export")

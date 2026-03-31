@@ -49,7 +49,6 @@ qt_add_qml_module(${PROJECT_NAME} URI app.maui.pix
     widgets/SelectionBar.qml
     widgets/SettingsDialog.qml
     widgets/OCRSettingsPage.qml
-    widgets/Sidebar.qml
     widgets/AppView.qml
     widgets/views/Viewer/OCRPage.qml
     widgets/views/CollectionView.qml
@@ -57,6 +56,12 @@ qt_add_qml_module(${PROJECT_NAME} URI app.maui.pix
 
 target_compile_definitions(${PROJECT_NAME}
     PRIVATE $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:QT_QML_DEBUG>)
+
+if(CMAKE_SYSTEM_PROCESSOR MATCHES "^(x86_64|amd64|AMD64)$")
+    if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+        target_compile_options(${PROJECT_NAME} PRIVATE -march=x86-64-v3)
+    endif()
+endif()
 
 target_link_libraries(${PROJECT_NAME}
     PRIVATE
@@ -72,9 +77,9 @@ target_link_libraries(${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME}
     PRIVATE
     Qt6::Quick
-    Qt6::Widgets
     KF6::KIOCore
-    KF6::KIOWidgets)
+    KF6::KIOWidgets
+    KF6::WindowSystem)
 
 install(TARGETS ${PROJECT_NAME} ${KDE_INSTALL_TARGETS_DEFAULT_ARGS})
 install(FILES org.kde.pix.desktop DESTINATION ${KDE_INSTALL_APPDIR})

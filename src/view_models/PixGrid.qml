@@ -70,7 +70,6 @@ Maui.Page
                         {
                             if(event.key === Qt.Key_Return)
                             {
-                                // _gridView.forceActiveFocus()
                                 event.accepted = true
                             }
                         }
@@ -187,7 +186,6 @@ Maui.Page
         {
             text: i18n("Ascending")
             checkable: true
-            // autoExclusive: true
             icon.name: "view-sort-ascending"
             onTriggered: browserSettings.sortOrder = Qt.AscendingOrder
             checked: browserSettings.sortOrder === Qt.AscendingOrder
@@ -197,7 +195,6 @@ Maui.Page
         {
             text: i18n("Descending")
             checkable: true
-            // autoExclusive: true
             icon.name: "view-sort-descending"
             onTriggered: browserSettings.sortOrder = Qt.DescendingOrder
             checked: browserSettings.sortOrder === Qt.DescendingOrder
@@ -210,7 +207,6 @@ Maui.Page
         anchors.fill: parent
         enableLassoSelection: true
         holder.visible: _gridView.count === 0
-        // padding: 0
 
         itemSize : control.itemSize
         itemHeight: browserSettings.showLabels ? _gridView.itemSize * 1.5 : _gridView.itemSize
@@ -272,11 +268,6 @@ Maui.Page
             index: control.currentIndex
             model: pixModel
 
-            // editMenuItem.action: Action
-            // {
-            //     shortcut: "Ctrl+E"
-            //     onTriggered: openEditor(pixModel.get(currentIndex).url, _stackView)
-            // }
         }
 
         onItemsSelected: (indexes) =>
@@ -452,6 +443,19 @@ function selectAll()
     {
         selectionBox.append(item.url, item)
     }
+}
+
+function search(text)
+{
+    if(text.includes(","))
+        model.filters = text.split(",")
+    else
+        model.filter = text
+}
+
+function clearSearch()
+{
+    model.clearFilters()
 }
 
 function openPic(index)
