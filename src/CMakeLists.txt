@@ -19,7 +19,7 @@ qt_generate_dbus_interface(${CMAKE_CURRENT_SOURCE_DIR}/pixserver.h org.kde.Pix.x
 qt_add_dbus_adaptor(pix_dbus_SRCS ${CMAKE_CURRENT_BINARY_DIR}/org.kde.Pix.xml pixserver.h Server)
 qt_add_dbus_interface(pix_dbus_SRCS ${CMAKE_CURRENT_BINARY_DIR}/org.kde.Pix.xml pixinterface)
 
-qt_add_resources(pix_ASSETS imgs.qrc)
+qt_add_resources(pix_ASSETS assets/imgs.qrc)
 
 qt_add_executable(${PROJECT_NAME}
     MANUAL_FINALIZATION
@@ -50,9 +50,7 @@ qt_add_qml_module(${PROJECT_NAME} URI app.maui.pix
     widgets/SettingsDialog.qml
     widgets/OCRSettingsPage.qml
     widgets/AppView.qml
-    widgets/views/Viewer/OCRPage.qml
-    widgets/views/CollectionView.qml
-    widgets/views/FloatingViewer.qml)
+    widgets/views/CollectionView.qml)
 
 target_compile_definitions(${PROJECT_NAME}
     PRIVATE $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:QT_QML_DEBUG>)

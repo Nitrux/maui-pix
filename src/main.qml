@@ -222,4 +222,5 @@ Maui.ApplicationWindow
     function tooglePreviewBar() { appView.tooglePreviewBar() }
     function showGallery() { appView.showGallery() }
     function showCollections() { appView.showCollections() }
+    function showTags() { appView.showTags() }
 }

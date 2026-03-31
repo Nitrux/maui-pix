@@ -8,8 +8,6 @@ import QtQuick.Layouts
 import QtQuick.Controls
 
 import org.mauikit.controls as Maui
-import org.mauikit.filebrowsing as FB
-
 import org.maui.pix as Pix
 
 import "../../../view_models"
@@ -17,13 +15,9 @@ import "../../../view_models"
 StackView
 {
     id: control
+    background: null
 
     readonly property Flickable flickable : currentItem.flickable
-
-    FB.NewTagDialog
-    {
-        id: newTagDialog
-    }
 
     initialItem: _frontPageComponent
 
@@ -33,6 +27,7 @@ StackView
 
         TagsView
         {
+            background: null
             list.urls : ["tags:///"+currentTag]
             list.recursive: false
 
@@ -45,70 +40,110 @@ StackView
         }
     }
 
-    Component
-    {
-        id: gpsGrid
-
-        TagsView
-        {
-            id: _gpsList
-
-            list: mainGalleryList
-            listModel.filters : currentFilters
-            headBar.visible: true
-            headBar.farLeftContent: ToolButton
-            {
-                icon.name: "go-previous"
-                onClicked: control.pop()
-            }
-
-            holder.visible: count === 0
-            holder.emoji: "image-x-generic"
-            holder.title :  i18n("No Pics!")
-            holder.body: mainGalleryList.status === Pix.GalleryList.Error ? mainGalleryList.error : (list.count > 0 ? i18n("No results found.") : i18n("Nothing here. You can add new sources or open an image."))
-        }
-    }
-
-    Component
+Component
     {
         id: _frontPageComponent
 
         Maui.Page
         {
             id: _frontPage
+            background: null
 
             Maui.Theme.inherit: false
             Maui.Theme.colorGroup: Maui.Theme.View
+
+            Maui.Controls.showCSD: true
+            headerMargins: Maui.Style.contentMargins
 
             flickable: _gridView.flickable
 
             headBar.visible: true
             headBar.forceCenterMiddleContent: false
-            headBar.middleContent: Maui.SearchField
-            {
-                enabled: _tagsList.count > 0
-                Layout.fillWidth: true
-                Layout.maximumWidth: 500
-                Layout.alignment: Qt.AlignCenter
 
-                placeholderText: i18np("Filter %1 tag", "Filter %1 tags", _tagsList.count)
-                onAccepted: _tagsModel.filter = text
-                onCleared: _tagsModel.filter = ""
-            }
+            headBar.leftContent: [
+                ToolButton
+                {
+                    icon.name: "folder-pictures"
+                    onClicked: ApplicationWindow.window.showGallery()
+                },
 
-            Action
-            {
-                id: _newTagAction
-                icon.name : "list-add"
-                text: i18n("New tag")
-                onTriggered: newTagDialog.open()
-            }
+                ToolButton
+                {
+                    icon.name: "folder"
+                    onClicked: ApplicationWindow.window.showCollections()
+                },
 
-            headBar.rightContent: ToolButton
-            {
-                action: _newTagAction
-                display: ToolButton.IconOnly
-            }
+                ToolButton
+                {
+                    icon.name: "tag"
+                    onClicked: ApplicationWindow.window.showTags()
+                },
+
+                ToolSeparator {
+                    bottomPadding: 10
+                    topPadding: 10
+                },
+
+                Label
+                {
+                    text: i18n("Sort")
+                    font.weight: Font.DemiBold
+                    verticalAlignment: Text.AlignVCenter
+                },
+
+                ComboBox
+                {
+                    id: _sortComboBox
+                    implicitWidth: 180
+                    currentIndex: 0
+
+                    model: [
+                        i18n("Name (A-Z)"),
+                        i18n("Name (Z-A)"),
+                        i18n("Date (newest)"),
+                        i18n("Date (oldest)")
+                    ]
+
+                    readonly property var _sorts: [
+                        { sort: "tag",     order: Qt.AscendingOrder  },
+                        { sort: "tag",     order: Qt.DescendingOrder },
+                        { sort: "adddate", order: Qt.DescendingOrder },
+                        { sort: "adddate", order: Qt.AscendingOrder  }
+                    ]
+
+                    onActivated: (index) =>
+                    {
+                        _tagsModel.sort = _sorts[index].sort
+                        _tagsModel.sortOrder = _sorts[index].order
+                    }
+                }
+            ]
+
+            headBar.rightContent: [
+                ToolSeparator {
+                    bottomPadding: 10
+                    topPadding: 10
+                },
+
+                Maui.ToolButtonMenu
+                {
+                    icon.name: "overflow-menu"
+
+                    MenuItem
+                    {
+                        text: i18n("Preferences")
+                        icon.name: "settings-configure"
+                        onTriggered: ApplicationWindow.window.openSettingsDialog()
+                    }
+
+                    MenuItem
+                    {
+                        text: i18n("About")
+                        icon.name: "documentinfo"
+                        onTriggered: Maui.App.aboutDialog()
+                    }
+                }
+            ]
 
             Maui.GridBrowser
             {
@@ -120,6 +155,8 @@ StackView
                     recursiveFilteringEnabled: true
                     sortCaseSensitivity: Qt.CaseInsensitive
                     filterCaseSensitivity: Qt.CaseInsensitive
+                    sort: "tag"
+                    sortOrder: Qt.AscendingOrder
 
                     list: Pix.TagsList
                     {
@@ -127,160 +164,23 @@ StackView
                     }
                 }
 
-                onKeyPress: (event) =>
+                Keys.onPressed: (event) =>
                 {
                     if(event.key === Qt.Key_Return || event.key === Qt.Key_Enter)
                     {
                         populateGrid(_gridView.currentItem.tag)
+                        event.accepted = true
                     }
                 }
 
-                itemSize: Math.min(260, Math.max(100, Math.floor(width* 0.3)))
+                itemSize: Math.min(260, Math.max(100, Math.floor(width * 0.3)))
                 itemHeight: itemSize + Maui.Style.rowHeight
                 currentIndex: -1
 
                 holder.visible: _gridView.count === 0
                 holder.emoji: "tag"
-                holder.title :i18n("No Tags!")
+                holder.title: i18n("No Tags!")
                 holder.body: i18n("You can create new tags to organize your gallery")
-                holder.actions: _newTagAction
-
-                flickable.header: Pane
-                {
-                    background: null
-                    width: parent.width
-                    implicitHeight: implicitContentHeight + topPadding + bottomPadding
-                    padding: Maui.Style.space.big
-                    height: implicitHeight
-
-                    contentItem: Column
-                    {
-                        spacing: Maui.Style.space.medium
-
-                        Maui.SectionGroup
-                        {
-                            visible: _geoFilterList.count > 0 && browserSettings.gpsTags
-
-                            width: parent.width
-                            title: i18n("Places")
-                            description: i18n("GPS based locations")
-
-                            Maui.ListBrowser
-                            {
-                                id:  _geoFilterList
-                                implicitHeight: 80
-                                Layout.fillWidth: true
-                                orientation: Qt.Horizontal
-                                currentIndex: -1
-                                padding: 0
-
-                                model: Maui.BaseModel
-                                {
-                                    list: Pix.CitiesList
-                                    {
-                                        cities: mainGalleryList.cities
-                                    }
-                                }
-
-                                delegate: Maui.ListBrowserDelegate
-                                {
-                                    height: 60
-                                    width: 200
-                                    iconSource: "mark-location"
-                                    label1.text: model.name
-                                    label2.text: model.country
-                                    iconVisible: true
-                                    template.isMask: true
-                                    onClicked:
-                                    {
-                                        populateByFilter([model.id])
-                                    }
-                                }
-                            }
-                        }
-
-                        Maui.SectionGroup
-                        {
-                            width: parent.width
-                            title: i18n("Filters")
-                            description: i18n("GPS based locations")
-
-                            Flow
-                            {
-                                id: _tagsRow
-                                Layout.fillWidth: true
-                                spacing: Maui.Style.space.medium
-
-                                Maui.Chip
-                                {
-                                    iconSource: "media-playback-start"
-                                    text: i18n("Animated")
-                                    color: "#43a047"
-                                    onClicked:
-                                    {
-                                        populateByFilter(["gif","avif"])
-                                    }
-                                }
-
-                                Maui.Chip
-                                {
-                                    iconSource: "monitor"
-                                    text: i18n("Screenshots")
-                                    color: "#00acc1"
-                                    onClicked: populateByFilter(["screenshot","screen"])
-                                }
-
-                                Maui.Chip
-                                {
-                                    iconSource: "view-calendar-birthday"
-                                    text: i18n("Sunday")
-                                    color: "#039be5"
-                                    onClicked: populateByFilter(["sunday","Sunday"])
-                                }
-
-                                Maui.Chip
-                                {
-                                    iconSource: "monitor"
-                                    text: i18n("PNGs")
-                                    color: "#1e88e5"
-                                    onClicked: populateByFilter([".png"])
-                                }
-
-                                Maui.Chip
-                                {
-                                    iconSource: "draw-calligraphic"
-                                    text: i18n("PSD")
-                                    color: "#8e24aa"
-                                    onClicked: populateByFilter([".psd"])
-                                }
-
-                                Maui.Chip
-                                {
-                                    iconSource: "draw-arrow"
-                                    text: i18n("Vectors")
-                                    color: "#d81b60"
-                                    onClicked: populateByFilter([".svg",".eps"])
-                                }
-
-                                Maui.Chip
-                                {
-                                    iconSource: "draw-brush"
-                                    text: i18n("Paint")
-                                    color: "#5e35b1"
-                                    onClicked: populateByFilter([".xcf", ".kra"])
-                                }
-
-                                Maui.Chip
-                                {
-                                    iconSource: "animal"
-                                    text: i18n("Animals")
-                                    color: "#3949ab"
-                                }
-
-                            }
-                        }
-                    }
-                }
 
                 delegate: Item
                 {
@@ -335,9 +235,5 @@ StackView
         control.push(tagsGrid, {'currentTag': myTag})
     }
 
-    function populateByFilter(filters)
-    {
-        control.push(gpsGrid, {'currentFilters': filters})
-    }
 }
 

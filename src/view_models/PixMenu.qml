@@ -11,65 +11,20 @@ Maui.ContextualMenu
 {
     id: control
 
-    property bool isFav : false
     property int index : -1
     property Maui.BaseModel model : null
     property var item : ({})
     readonly property string totalCount : filterSelection(item.url).length > 1 ? filterSelection(item.url).length : ""
 
     property alias editMenuItem : _editMenuItem
+
     onOpened:
     {
-        if(control.model &&  control.index >= 0 )
+        if(control.model && control.index >= 0)
         {
-         control.item = control.model.get(control.index)
-        }
-
-        control.isFav = FB.Tagging.isFav(control.item.url)
-    }
-
-    Maui.Controls.component: Maui.IconItem
-    {
-        visible: !pixViewer.active
-        imageSource: control.item.url
-        fillMode: Image.PreserveAspectCrop
-        implicitHeight: visible ? 50 : 0
-        maskRadius: Maui.Style.radiusV
-    }
-
-    Maui.MenuItemActionRow
-    {
-        Action
-        {
-            text: i18n(isFav ? "UnFav it": "Fav it")
-            checked: isFav
-            checkable: true
-            icon.name: "love"
-            onTriggered: FB.Tagging.toggleFav(item.url)
-        }
-
-        Action
-        {
-            text: i18n("Info")
-            icon.name: "documentinfo"
-            onTriggered:
-            {
-                getFileInfo(item.url)
-            }
-        }
-
-        Action
-        {
-            text: i18n("Share")
-            icon.name: "document-share"
-            onTriggered:
-            {
-                Maui.Platform.shareFiles(filterSelection(item.url))
-            }
+            control.item = control.model.get(control.index)
         }
     }
-
-    MenuSeparator{}
 
     MenuItem
     {
@@ -87,17 +42,6 @@ Maui.ContextualMenu
         }
     }
 
-    MenuItem
-    {
-        text: i18n("Open in New Window")
-        icon.name: "window-new"
-        onTriggered:
-        {
-            root.view(filterSelection(item.url), true)
-        }
-    }
-
-
     MenuSeparator{}
 
     MenuItem
@@ -109,19 +53,6 @@ Maui.ContextualMenu
         onTriggered:
         {
             FB.Tagging.tagUrl(control.item.url, browserSettings.lastUsedTag)
-        }
-    }
-
-    MenuItem
-    {
-        text: i18n("Add to Album")
-        icon.name: "tag"
-        Maui.Controls.badgeText: control.totalCount
-
-        onTriggered:
-        {
-            openTagsDialog(filterSelection(item.url))
-            _selectionBar.clear()
         }
     }
 
@@ -142,21 +73,6 @@ Maui.ContextualMenu
 
     MenuItem
     {
-        text: i18n("Save as")
-        icon.name: "document-save-as"
-        onTriggered: saveAs([item.url])
-    }
-
-    MenuItem
-    {
-        text: i18n("Open with")
-        icon.name: "document-open"
-        Maui.Controls.badgeText: control.totalCount
-        onTriggered: openFileWith(filterSelection(item.url))
-    }
-
-    MenuItem
-    {
         text: i18n("Go to Folder")
         icon.name: "folder-open"
         onTriggered:
@@ -173,13 +89,9 @@ Maui.ContextualMenu
 
     MenuItem
     {
-        enabled: !Maui.Handy.isAndroid
-        text: i18n("Open Location")
-        icon.name: "folder-open"
-        onTriggered:
-        {
-            Pix.Collection.showInFolder(filterSelection(item.url))
-        }
+        text: i18n("Copy Path to Clipboard")
+        icon.name: "edit-copy"
+        onTriggered: Maui.Handy.copyTextToClipboard(item.url.replace("file://", ""))
     }
 
     MenuSeparator{}

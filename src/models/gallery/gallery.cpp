@@ -269,6 +269,15 @@ bool Gallery::deleteAt(const int &index)
     return true;
 }
 
+void Gallery::removeFiles(const QStringList &urls)
+{
+    for (const auto &url : urls)
+    {
+        const auto index = this->indexOf(FMH::MODEL_KEY::URL, url);
+        deleteAt(index);
+    }
+}
+
 void Gallery::append(const QVariantMap &pic)
 {
     Q_EMIT this->preItemAppended();

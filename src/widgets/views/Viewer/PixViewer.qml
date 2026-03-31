@@ -7,12 +7,9 @@ import QtQuick
 
 import QtQuick.Controls
 import QtQuick.Layouts
-import QtQuick.Window
-import QtQuick.Effects
 
 import org.mauikit.controls as Maui
 import org.mauikit.filebrowsing as FB
-import org.mauikit.imagetools as IT
 
 import org.maui.pix as Pix
 
@@ -77,7 +74,7 @@ Maui.Page
     Maui.Controls.showCSD: true
     altHeader: Maui.Handy.isMobile
     floatingHeader: true
-    autoHideHeader: viewer.imageZooming || viewer.focusedMode
+    autoHideHeader: viewer.imageZooming
     headerMargins: Maui.Style.contentMargins
 
     headBar.leftContent: [
@@ -106,24 +103,43 @@ Maui.Page
         }
     ]
 
-    headBar.rightContent: Maui.ToolButtonMenu
-    {
-        icon.name: "overflow-menu"
-
-        MenuItem
+    headBar.rightContent: [
+        ToolButton
         {
-            text: i18n("Preferences")
-            icon.name: "settings-configure"
-            onTriggered: ApplicationWindow.window.openSettingsDialog()
-        }
-
-        MenuItem
-        {
-            text: i18n("About")
             icon.name: "documentinfo"
-            onTriggered: Maui.App.aboutDialog()
+            onClicked: getFileInfo(control.currentPic.url)
+        },
+
+        ToolButton
+        {
+            icon.name: "edit-delete"
+            onClicked: removeFiles([control.currentPic.url])
+        },
+
+        ToolSeparator {
+            bottomPadding: 10
+            topPadding: 10
+        },
+
+        Maui.ToolButtonMenu
+        {
+            icon.name: "overflow-menu"
+
+            MenuItem
+            {
+                text: i18n("Preferences")
+                icon.name: "settings-configure"
+                onTriggered: ApplicationWindow.window.openSettingsDialog()
+            }
+
+            MenuItem
+            {
+                text: i18n("About")
+                icon.name: "documentinfo"
+                onTriggered: Maui.App.aboutDialog()
+            }
         }
-    }
+    ]
 
     headerColumn: Maui.ToolBar
     {
@@ -422,18 +438,6 @@ Maui.Page
 
         control.currentPicFav = FB.Tagging.isFav(control.currentPic.url)
         root.title = control.currentPic.title
-    }
-
-    function nextUrl() : string
-    {
-        incrementCurrentIndex()
-        return currentPic.url
-    }
-
-    function previousUrl() : string
-    {
-        decrementCurrentIndex()
-        return currentPic.url
     }
 
     function view(index : int)

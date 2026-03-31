@@ -6,7 +6,6 @@
 import QtQuick
 import QtQml
 import QtQuick.Controls
-import QtQuick.Layouts
 
 import org.mauikit.controls as Maui
 import org.mauikit.imagetools as IT
@@ -51,6 +50,21 @@ Item
 
     Keys.enabled: true
     Keys.forwardTo: viewerList
+
+    WheelHandler
+    {
+        target: null
+        grabPermissions: PointerHandler.CanTakeOverFromAnything
+        onWheel: (event) =>
+        {
+            var imgViewer = viewerList.currentItem ? viewerList.currentItem.item : null
+            if (!imgViewer || !imgViewer.hasOwnProperty("zoom")) return
+            if (event.angleDelta.y !== 0)
+            {
+                imgViewer.zoom(1 + event.angleDelta.y / 600, event.x, event.y)
+            }
+        }
+    }
 
     Maui.BaseModel
     {
@@ -274,11 +288,6 @@ Item
                     Keys.forwardTo: _ocrLoader.item
 
                     readonly property bool imageReady: _imgV.image.status == Image.Ready
-                    onClicked: (mouse) =>
-                               {
-                                   control.focusedMode = !control.focusedMode
-                                   mouse.accepted = false
-                               }
 
                     Timer
                     {

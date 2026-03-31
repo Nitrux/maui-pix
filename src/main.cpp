@@ -24,6 +24,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ***/
 
 #include <QCommandLineParser>
+#include <QDate>
 #include <QFileInfo>
 #include <QIcon>
 #include <QQmlApplicationEngine>
@@ -100,40 +101,30 @@ Q_DECL_EXPORT int main(int argc, char *argv[])
     QImageReader::setAllocationLimit(2000);
 
     app.setOrganizationName(QStringLiteral("Maui"));
-    app.setWindowIcon(QIcon(":/assets/pix.png"));
+    app.setWindowIcon(QIcon(":/pix.png"));
 
     KLocalizedString::setApplicationDomain("pix");
 
     KAboutData about(QStringLiteral("pix"),
-                     QStringLiteral("Pix"),
+                     i18n("Pix"),
                      PIX_VERSION_STRING,
                      i18n("Organize, browse, and edit your images."),
                      KAboutLicense::LGPL_V3,
-                     APP_COPYRIGHT_NOTICE,
+                     i18n("© %1 Made by Nitrux | Built with MauiKit", QString::number(QDate::currentDate().year())),
                      QString(GIT_BRANCH) + "/" + QString(GIT_COMMIT_HASH));
     about.addAuthor(QStringLiteral("Camilo Higuita"), i18n("Developer"), QStringLiteral("milo.h@aol.com"));
-    about.setHomepage("https://mauikit.org");
-    about.setProductName("maui/pix");
-    about.setBugAddress("https://invent.kde.org/maui/pix/-/issues");
+    about.addAuthor(QStringLiteral("Uri Herrera"), i18n("Developer"), QStringLiteral("uri_herrera@nxos.org"));
+    about.setHomepage("https://nxos.org");
+    about.setProductName("nitrux/pix");
     about.setOrganizationDomain(PIX_URI);
+    about.setDesktopFileName("org.maui.pix");
     about.setProgramLogo(app.windowIcon());
-
-    const auto exiv2Data = MauiKitImageTools::exiv2Data();
-    about.addComponent(exiv2Data.name(), "", exiv2Data.version(), exiv2Data.webAddress());
-
-    const auto kexiv2Data = MauiKitImageTools::libKexiv2Data();
-    about.addComponent(kexiv2Data.name(), kexiv2Data.description(), kexiv2Data.version(), kexiv2Data.webAddress());
 
     const auto ITData = MauiKitImageTools::aboutData();
     about.addComponent(ITData.name(), MauiKitImageTools::buildVersion(), ITData.version(), ITData.webAddress());
 
-    const auto OCRData = MauiKitImageTools::tesseractData();
-    about.addComponent(OCRData.name(), OCRData.description(), OCRData.version(), OCRData.webAddress());
-
-    const auto openCVData = MauiKitImageTools::opencvData();
-    about.addComponent(openCVData.name(), openCVData.description(), openCVData.version(), openCVData.webAddress());
     KAboutData::setApplicationData(about);
-    MauiApp::instance()->setIconName("pix");
+    MauiApp::instance()->setIconName("qrc:/pix.svg");
 
     QCommandLineOption newWindow(QStringList() << "w" << "window", "Open in window.", "windowed", "true");
     QCommandLineOption viewCommand(QStringList() << "o" << "o", "View images or folder", "url1,url2,...");

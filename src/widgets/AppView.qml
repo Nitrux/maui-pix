@@ -6,6 +6,7 @@ import QtQuick.Controls
 import "views"
 import "views/Viewer"
 import "views/Gallery"
+import "views/Tags"
 
 import org.mauikit.controls as Maui
 import org.mauikit.filebrowsing as FB
@@ -91,6 +92,12 @@ Item
         CollectionView {}
     }
 
+    Component
+    {
+        id: _tagsViewComponent
+        TagsSidebar { objectName: "TagsView" }
+    }
+
     property int lastEditorAction : ITEditor.ImageEditor.ActionType.Colors
     Component
     {
@@ -102,99 +109,19 @@ Item
             objectName: "ImageEditor"
             Maui.Controls.showCSD: true
             initialActionType: lastEditorAction
+            headerMargins: Maui.Style.contentMargins
 
-            Maui.Notification
+            headBar.farLeftContent: ToolButton
             {
-                id: _confirmNotification
-                property var func: ({})
-                title: i18n("Image Modified")
-                message: i18n("The image has been edited. Save or discard the changes before continuing")
-                iconName: _editor.url
-                Action
-                {
-                    text: i18n("Discard")
-                    onTriggered:
-                    {
-                        _editor.editor.cancel()
-                        _confirmNotification.func()
-                    }
-                }
+                Maui.Controls.status: _editor.editor.edited ? Maui.Controls.Positive : Maui.Controls.Normal
+                onClicked: _editor.editor.edited ? _editor.save() : _editor.canceled()
             }
 
-            Keys.enabled: true
-            Keys.onPressed: (event) => {
-                if(event.key === Qt.Key_Left)
-                {
-                    _goPreviousAction.trigger()
-                    event.accepted = true
-                    return
-                }
-
-                if(event.key === Qt.Key_Right)
-                {
-                    _goNextAction.trigger()
-                    event.accepted = true
-                    return
-                }
-            }
-
-            function editNextImage()
+            headBar.farRightContent: ToolButton
             {
-                var index = _editor.StackView.view.depth - 2
-                var item = _editor.StackView.view.get(index, StackView.DontLoad)
-                var url = item.nextUrl()
-                _editor.url = url
-                _editor.forceActiveFocus()
-            }
-
-            function editPreviousImage()
-            {
-                var index = _editor.StackView.view.depth - 2
-                var item = _editor.StackView.view.get(index, StackView.DontLoad)
-                var url = item.previousUrl()
-                _editor.url = url
-                _editor.forceActiveFocus()
-            }
-
-            headBar.leftContent: Maui.ToolActions
-            {
-                checkable:false
-                autoExclusive: false
-
-                Action
-                {
-                    id: _goPreviousAction
-                    icon.name: "go-previous"
-                    onTriggered:
-                    {
-                        console.log("Changes saved vs applied", _editor.editor.changesSaved, _editor.editor.changesApplied)
-                        if(!_editor.editor.changesSaved)
-                        {
-                            _confirmNotification.func = _editor.editPreviousImage
-                            _confirmNotification.dispatch()
-                            return
-                        }
-                        _editor.editPreviousImage()
-                    }
-                }
-
-                Action
-                {
-                    id: _goNextAction
-                    icon.name: "go-next"
-                    onTriggered:
-                    {
-                        console.log("Changes saved vs applied", _editor.editor.changesSaved, _editor.editor.changesApplied)
-
-                        if(!_editor.editor.changesSaved)
-                        {
-                            _confirmNotification.func = _editor.editNextImage
-                            _confirmNotification.dispatch()
-                            return
-                        }
-                        _editor.editNextImage()
-                    }
-                }
+                enabled: _editor.editor.edited
+                Maui.Controls.status: Maui.Controls.Negative
+                onClicked: _editor.cancel()
             }
 
             onSaved:
@@ -211,7 +138,6 @@ Item
 
             onCanceled:
             {
-                console.log("Image edited? ", editor.edited)
                 lastEditorAction = getCurrentActionType()
 
                 if(!editor.edited)
@@ -375,32 +301,22 @@ Item
     {
         id: _removeDialogComponent
 
-        FB.FileListingDialog
+        Maui.InfoDialog
         {
-            id: removeDialog
-            title: i18np("Delete %1 file?", "Delete %1 files?", urls.length)
-            message: i18np("Are sure you want to delete this file? This action can not be undone.", "Are sure you want to delete these files? This action can not be undone.", urls.length)
-            onClosed: destroy()
-            actions:
-                [
-                Action
-                {
-                    text: i18n("Cancel")
-                    onTriggered: removeDialog.close()
-                },
+            property var urls: []
 
-                Action
-                {
-                    text: i18n("Remove")
-                    Maui.Controls.status: Maui.Controls.Negative
-                    onTriggered:
-                    {
-                        FB.FM.removeFiles(removeDialog.urls)
-                        selectionBox.clear()
-                        close()
-                    }
-                }
-            ]
+            title: i18np("Delete %1 file?", "Delete %1 files?", urls.length)
+            message: i18np("Are you sure you want to delete this file? This action cannot be undone.", "Are you sure you want to delete these %1 files? This action cannot be undone.", urls.length)
+            template.iconSource: "edit-delete"
+            standardButtons: Dialog.Ok | Dialog.Cancel
+
+            onAccepted:
+            {
+                Pix.Collection.allImagesModel.removeFiles(urls)
+                selectionBox.clear()
+            }
+
+            onClosed: destroy()
         }
     }
 
@@ -460,6 +376,20 @@ Item
 
         if(_stackView.currentItem.objectName !== "CollectionView")
             _stackView.push(_collectionViewComponent)
+
+        _stackView.currentItem.forceActiveFocus()
+    }
+
+    function showTags()
+    {
+        if(_stackView.currentItem.objectName === "TagsView")
+            return
+
+        if(_pixViewer.active)
+            _stackView.pop()
+
+        if(_stackView.currentItem.objectName !== "TagsView")
+            _stackView.push(_tagsViewComponent)
 
         _stackView.currentItem.forceActiveFocus()
     }

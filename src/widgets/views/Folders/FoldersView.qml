@@ -146,15 +146,6 @@ StackView
                     Drag.keys: ["text/uri-list"]
                     Drag.mimeData: Drag.active ? { "text/uri-list": model.path } : {}
 
-                    Rectangle
-                    {
-                        anchors.fill: parent
-                        color: "transparent"
-                        radius: Maui.Style.radiusV
-                        border.width: (parent.hovered || parent.isCurrentItem) ? 0 : 1
-                        border.color: Qt.rgba(Maui.Theme.textColor.r, Maui.Theme.textColor.g, Maui.Theme.textColor.b, 0.15)
-                        z: 1
-                    }
 
                 onClicked:
                 {

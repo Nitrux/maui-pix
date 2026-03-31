@@ -13,7 +13,7 @@ Maui.GridBrowserDelegate
     maskRadius: 0
     draggable: true
 
-    tooltipText: model.url
+    tooltipText: model.url.replace("file://", "")
     iconSizeHint: Maui.Style.iconSizes.small
 
     label1.text: model.title

@@ -19,6 +19,7 @@ PixGrid
     list: Pix.Collection.allImagesModel
     background: null
     Maui.Controls.showCSD: true
+    headerMargins: Maui.Style.contentMargins
 
     holder.emoji: "image-x-generic"
     holder.title : i18n("No Pics!")
@@ -27,7 +28,7 @@ PixGrid
     headBar.leftContent: [
         ToolButton
         {
-            icon.name: "folder-pictures"
+            icon.name: "view-preview"
             onClicked: ApplicationWindow.window.showGallery()
         },
 
@@ -35,6 +36,12 @@ PixGrid
         {
             icon.name: "folder"
             onClicked: ApplicationWindow.window.showCollections()
+        },
+
+        ToolButton
+        {
+            icon.name: "tag"
+            onClicked: ApplicationWindow.window.showTags()
         },
 
         ToolSeparator {
@@ -51,9 +58,20 @@ PixGrid
         }
     ]
 
-    headBar.rightContent: Maui.ToolButtonMenu
-    {
-        icon.name: "overflow-menu"
+    headBar.rightContent: [
+        Loader
+        {
+            sourceComponent: control.extraOptions
+        },
+
+        ToolSeparator {
+            bottomPadding: 10
+            topPadding: 10
+        },
+
+        Maui.ToolButtonMenu
+        {
+            icon.name: "overflow-menu"
 
         MenuItem
         {
@@ -69,4 +87,5 @@ PixGrid
             onTriggered: Maui.App.aboutDialog()
         }
     }
+    ]
 }

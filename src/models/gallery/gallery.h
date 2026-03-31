@@ -144,6 +144,7 @@ Q_SIGNALS:
 public Q_SLOTS:
     bool remove(const int &);
     bool deleteAt(const int &);
+    void removeFiles(const QStringList &urls);
 
     void append(const QVariantMap &);
     void append(const QString &);

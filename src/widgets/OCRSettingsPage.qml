@@ -22,11 +22,6 @@ Maui.SettingsPage
             anchors.fill: parent
             color: "#333"
             radius: Maui.Style.radiusV
-            Image
-            {
-                anchors.fill: parent
-                source:  "://assets/paper_texture.png"
-            }
         }
 
         contentItem: ColumnLayout

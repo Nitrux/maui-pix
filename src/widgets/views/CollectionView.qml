@@ -39,6 +39,7 @@ Maui.Page
 
     background: null
     Maui.Controls.showCSD: true
+    headerMargins: Maui.Style.contentMargins
 
     focus: true
     focusPolicy: Qt.StrongFocus
@@ -77,6 +78,11 @@ Maui.Page
             onClicked: _foldersView.pop()
         },
 
+        ToolSeparator {
+            bottomPadding: 10
+            topPadding: 10
+        },
+
         ToolButton
         {
             icon.name: "folder-pictures"
@@ -89,7 +95,10 @@ Maui.Page
             onClicked: ApplicationWindow.window.showCollections()
         },
 
-        ToolSeparator {},
+        ToolSeparator {
+            bottomPadding: 10
+            topPadding: 10
+        },
 
         Maui.SearchField
         {
@@ -147,30 +156,6 @@ Maui.Page
             anchors.fill: parent
         }
 
-        FloatingViewer
-        {
-            id: _floatingViewer
-
-            DragHandler
-            {
-                target: _floatingViewer
-                xAxis.maximum: _contentArea.width - _floatingViewer.width
-                xAxis.minimum: 0
-
-                yAxis.maximum: _contentArea.height - _floatingViewer.height
-                yAxis.minimum: 0
-
-                onActiveChanged:
-                {
-                    if(!active)
-                    {
-                        let newX = Math.abs(_floatingViewer.x - (_contentArea.width - _floatingViewer.implicitWidth - 20))
-                        _floatingViewer.y = Qt.binding(()=> { return _floatingViewer.parent.height - _floatingViewer.implicitHeight - 20})
-                        _floatingViewer.x = Qt.binding(()=> { return (_floatingViewer.parent.width - _floatingViewer.implicitWidth - 20 - newX) < 0 ? 20 : _contentArea.width - _floatingViewer.implicitWidth - 20 - newX})
-                    }
-                }
-            }
-        }
     }
 
     function openFolder(url, filters)
