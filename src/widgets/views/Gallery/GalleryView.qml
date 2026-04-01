@@ -53,8 +53,10 @@ PixGrid
         {
             placeholderText: i18n("Search pictures")
             implicitWidth: 250
-            onAccepted: control.search(text)
+            onTextChanged: control.search(text)
             onCleared: control.clearSearch()
+            Keys.priority: Keys.AfterItem
+            Keys.onReturnPressed: event.accepted = true
         }
     ]
 

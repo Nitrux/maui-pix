@@ -59,26 +59,18 @@ void Folders::setList()
 QStringList Folders::getPreviews(const QString &path)
 {
     QStringList res;
-    QDir dir(QUrl::fromUserInput(path).toLocalFile());
+    const QString localPath = QUrl::fromUserInput(path).toLocalFile();
 
-    qDebug() << "GET PREVIEWS" << path << QUrl::fromUserInput(path).toLocalFile();
+    qDebug() << "GET PREVIEWS" << path << localPath;
 
-    if(!dir.exists())
-        return res;
+    QDirIterator it(localPath,
+                    QStringList() << FMStatic::FILTER_LIST[FMStatic::FILTER_TYPE::IMAGE],
+                    QDir::Files,
+                    QDirIterator::NoIteratorFlags);
 
-    dir.setFilter(QDir::Files);
-    dir.setSorting(QDir::Time);
-    dir.setNameFilters(QStringList() << FMStatic::FILTER_LIST[FMStatic::FILTER_TYPE::IMAGE]);
-
-    int i= 0;
-
-    for(const auto &entry : dir.entryInfoList())
+    while (it.hasNext() && res.size() < 4)
     {
-        if(i >= 4)
-            break;
-
-        res << QUrl::fromLocalFile(entry.filePath()).toString();
-        i++;
+        res << QUrl::fromLocalFile(it.next()).toString();
     }
 
     qDebug() << "GET PREVIEWS" << res;

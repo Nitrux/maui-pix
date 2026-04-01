@@ -32,6 +32,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <QDirIterator>
 #include <QPair>
 #include <QImageReader>
+#include <QPixmapCache>
 
 #include <QGuiApplication>
 #include <QSurfaceFormat>
@@ -99,6 +100,7 @@ Q_DECL_EXPORT int main(int argc, char *argv[])
     QGuiApplication app(argc, argv);
 
     QImageReader::setAllocationLimit(2000);
+    QPixmapCache::setCacheLimit(20480); // 20 MB cap; thumbnails use image.cache: false
 
     app.setOrganizationName(QStringLiteral("Maui"));
     app.setWindowIcon(QIcon(":/pix.png"));

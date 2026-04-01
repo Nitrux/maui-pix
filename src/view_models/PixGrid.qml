@@ -210,7 +210,7 @@ Maui.Page
 
         itemSize : control.itemSize
         itemHeight: browserSettings.showLabels ? _gridView.itemSize * 1.5 : _gridView.itemSize
-        cacheBuffer: control.height * 5
+        cacheBuffer: control.height
         flickable.reuseItems: true
 
         Loader
@@ -229,6 +229,7 @@ Maui.Page
 
             sort: browserSettings.sortBy
             sortOrder: browserSettings.sortOrder
+            filterRole: "title"
             recursiveFilteringEnabled: true
             sortCaseSensitivity: Qt.CaseInsensitive
             filterCaseSensitivity: Qt.CaseInsensitive

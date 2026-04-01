@@ -38,7 +38,7 @@ StackView
     readonly property alias picsView : control.currentItem
     readonly property Flickable flickable : picsView.flickable
 
-    readonly property string pendingFolder : initModule === "folder" ? initData[0] : ""
+    readonly property string pendingFolder : initModule === "folder" && initData.length > 0 ? initData[0] : ""
     Component.onCompleted:
     {
         if(pendingFolder.length > 0)
@@ -115,6 +115,7 @@ StackView
 
                 sortOrder: Qt.DescendingOrder
                 sort: "modified"
+                filterRole: "label"
                 recursiveFilteringEnabled: false
                 sortCaseSensitivity: Qt.CaseInsensitive
                 filterCaseSensitivity: Qt.CaseInsensitive
@@ -169,18 +170,6 @@ StackView
             }
         }
 
-        function search(text)
-        {
-            if(text.includes(","))
-                folderModel.filters = text.split(",")
-            else
-                folderModel.filter = text
-        }
-
-        function clearSearch()
-        {
-            folderModel.clearFilters()
-        }
     }
 }
 
@@ -206,10 +195,17 @@ Component
         holder.title : i18n("Folder is empty!")
         holder.body: i18n("There're no images in this folder. %1", list.urls)
 
+        list.onStatusChanged: {
+            if(list.status === GalleryList.Ready) {
+                Qt.callLater(() => gridView.flickable.positionViewAtBeginning())
+            }
+        }
+
         gridView.header: Loader
         {
             width: parent.width
             asynchronous: true
+            onLoaded: Qt.callLater(() => _picsView.gridView.flickable.positionViewAtBeginning())
             sourceComponent: Column
             {
                 spacing: Maui.Style.space.medium
@@ -322,13 +318,22 @@ function openFolder(url, filters)
 
 function search(text)
 {
-    if(currentItem && currentItem.hasOwnProperty("search"))
+    if(control.depth <= 1)
+    {
+        if(text.includes(","))
+            folderModel.filters = text.split(",")
+        else
+            folderModel.filter = text
+    }
+    else if(currentItem)
         currentItem.search(text)
 }
 
 function clearSearch()
 {
-    if(currentItem && currentItem.hasOwnProperty("clearSearch"))
+    if(control.depth <= 1)
+        folderModel.clearFilters()
+    else if(currentItem)
         currentItem.clearSearch()
 }
 }

@@ -181,6 +181,11 @@ void Gallery::scanGpsTags()
             item[FMH::MODEL_KEY::CITY] = cityId;
     };
 
+    if (m_futureWatcher)
+    {
+        m_futureWatcher->cancel();
+        m_futureWatcher->deleteLater();
+    }
     m_futureWatcher = new QFutureWatcher<void>;
     auto future = QtConcurrent::map(list, functor);
     m_futureWatcher->setFuture(future);
@@ -294,6 +299,15 @@ void Gallery::append(const QString &url)
 
 void Gallery::clear()
 {
+    m_scanTimer->stop();
+
+    const auto watchedDirs = m_watcher->directories();
+    if (!watchedDirs.isEmpty())
+        m_watcher->removePaths(watchedDirs);
+    const auto watchedFiles = m_watcher->files();
+    if (!watchedFiles.isEmpty())
+        m_watcher->removePaths(watchedFiles);
+
     Q_EMIT this->preListChanged();
     this->list.clear();
     Q_EMIT this->postListChanged();

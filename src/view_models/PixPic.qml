@@ -67,7 +67,7 @@ Maui.GridBrowserDelegate
         {
             id: _iconItem
             iconSource: control.iconSource
-            imageSource: model.url
+            imageSource: model.url ?? ""
 
             highlighted: control.isCurrentItem
             hovered: control.hovered
@@ -82,6 +82,7 @@ Maui.GridBrowserDelegate
             imageHeight: control.imageHeight
 
             isMask: true
+            image.cache: false
             image.autoTransform: true
         }
     }

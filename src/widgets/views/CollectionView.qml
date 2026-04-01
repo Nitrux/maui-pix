@@ -102,10 +102,12 @@ Maui.Page
 
         Maui.SearchField
         {
-            placeholderText: i18n("Search pictures")
+            placeholderText: _foldersView.depth <= 1 ? i18n("Search collections") : i18n("Search pictures")
             implicitWidth: 250
-            onAccepted: _foldersView.search(text)
+            onTextChanged: _foldersView.search(text)
             onCleared: _foldersView.clearSearch()
+            Keys.priority: Keys.AfterItem
+            Keys.onReturnPressed: event.accepted = true
         }
     ]
 
