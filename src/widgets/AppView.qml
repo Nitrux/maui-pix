@@ -115,19 +115,6 @@ Item
             initialActionType: lastEditorAction
             headerMargins: Maui.Style.contentMargins
 
-            headBar.farLeftContent: ToolButton
-            {
-                Maui.Controls.status: _editor.editor.edited ? Maui.Controls.Positive : Maui.Controls.Normal
-                onClicked: _editor.editor.edited ? _editor.save() : _editor.canceled()
-            }
-
-            headBar.farRightContent: ToolButton
-            {
-                enabled: _editor.editor.edited
-                Maui.Controls.status: Maui.Controls.Negative
-                onClicked: _editor.cancel()
-            }
-
             onSaved:
             {
                 lastEditorAction = getCurrentActionType()
