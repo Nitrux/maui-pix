@@ -27,16 +27,98 @@ StackView
 
         TagsView
         {
+            id: _tagGridView
             background: null
-            list.urls : ["tags:///"+currentTag]
+            list.urls: ["tags:///" + currentTag]
             list.recursive: false
 
+            Maui.Controls.showCSD: true
+            headerMargins: Maui.Style.contentMargins
             headBar.visible: true
-            headBar.farLeftContent: ToolButton
-            {
-                icon.name: "go-previous"
-                onClicked: control.pop()
-            }
+
+            headBar.leftContent: [
+                ToolButton
+                {
+                    icon.name: "go-previous"
+                    onClicked: control.pop()
+                },
+
+                ToolSeparator {
+                    bottomPadding: 10
+                    topPadding: 10
+                },
+
+                ToolButton
+                {
+                    icon.name: "folder-pictures"
+                    onClicked: ApplicationWindow.window.showGallery()
+                },
+
+                ToolButton
+                {
+                    icon.name: "folder"
+                    onClicked: ApplicationWindow.window.showCollections()
+                },
+
+                ToolButton
+                {
+                    icon.name: "tag"
+                    onClicked: ApplicationWindow.window.showTags()
+                },
+
+                ToolSeparator {
+                    bottomPadding: 10
+                    topPadding: 10
+                },
+
+                Maui.SearchField
+                {
+                    enabled: _tagGridView.list.count > 0
+                    placeholderText: i18np("Search image", "Search %1 images", _tagGridView.list.count)
+                    implicitWidth: 250
+                    onTextChanged: _tagGridView.search(text)
+                    onCleared: _tagGridView.clearSearch()
+                    Keys.priority: Keys.AfterItem
+                    Keys.onReturnPressed: event.accepted = true
+                }
+            ]
+
+            headBar.rightContent: [
+                ToolButton
+                {
+                    icon.name: "media-playback-start"
+                    onClicked: ApplicationWindow.window.startSlideshowFromModel(_tagGridView.list)
+                },
+
+                Loader
+                {
+                    sourceComponent: _tagGridView.extraOptions
+                },
+
+                ToolSeparator {
+                    bottomPadding: 10
+                    topPadding: 10
+                },
+
+                Maui.ToolButtonMenu
+                {
+                    icon.name: "overflow-menu"
+
+                    MenuItem
+                    {
+                        text: i18n("Preferences")
+                        icon.name: "settings-configure"
+                        onTriggered: ApplicationWindow.window.openSettingsDialog()
+                    }
+
+                    MenuItem
+                    {
+                        text: i18n("About")
+                        icon.name: "documentinfo"
+                        onTriggered: Maui.App.aboutDialog()
+                    }
+                }
+            ]
         }
     }
 

@@ -96,6 +96,12 @@ Maui.Page
             onClicked: ApplicationWindow.window.showCollections()
         },
 
+        ToolButton
+        {
+            icon.name: "tag"
+            onClicked: ApplicationWindow.window.showTags()
+        },
+
         ToolSeparator {
             bottomPadding: 10
             topPadding: 10

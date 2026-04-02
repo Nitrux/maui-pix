@@ -136,7 +136,7 @@ Gallery::Gallery(QObject *parent)
     // Two threads: one is usually decoding a source image, the other is saving.
     m_thumbPool->setMaxThreadCount(2);
     m_scanTimer->setSingleShot(true);
-    m_scanTimer->setInterval(15000); //wait 15 secs after a new image is found and before the rescan
+    m_scanTimer->setInterval(2000); // 2 s debounce: coalesces rapid filesystem events without feeling sluggish
 }
 
 Gallery::~Gallery()
