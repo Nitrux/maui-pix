@@ -58,6 +58,42 @@ Maui.Page
     property int currentPicIndex : 0
     property bool doodle : false
 
+    property bool slideshowActive: false
+    onSlideshowActiveChanged: if (!slideshowActive) { _advanceTimer.stop(); _transitionOverlay.opacity = 0 }
+
+    // Fade duration in ms — must match the Behavior on _transitionOverlay.opacity.
+    readonly property int _fadeDuration: 600
+
+    Timer
+    {
+        id: _slideshowTimer
+        // Each slide occupies the full interval. The transition (2 × _fadeDuration)
+        // is baked into that time: image is visible for (interval*1000 - 2*fade) ms.
+        interval: viewerSettings.slideshowInterval * 1000
+        running: control.slideshowActive && viewer.count > 1
+        repeat: true
+        onTriggered: _transitionOverlay.fadeAndAdvance()
+    }
+
+    // Fires once the fade-to-black is complete; advances the image while the
+    // screen is fully dark, then fades back in.
+    Timer
+    {
+        id: _advanceTimer
+        interval: control._fadeDuration
+        repeat: false
+        onTriggered:
+        {
+            if (!control.slideshowActive)
+                return
+            if (!viewerSettings.slideshowLoop && control.currentPicIndex >= control.viewer.count - 1)
+                control.slideshowActive = false
+            else
+                control.next()
+            _transitionOverlay.opacity = 0
+        }
+    }
+
     PixMenu
     {
         id: _picMenu
@@ -104,6 +140,13 @@ Maui.Page
     ]
 
     headBar.rightContent: [
+        ToolButton
+        {
+            visible: control.slideshowActive
+            icon.name: "media-playback-stop"
+            onClicked: control.slideshowActive = false
+        },
+
         ToolButton
         {
             icon.name: "documentinfo"
@@ -368,6 +411,34 @@ Maui.Page
                         color: "black"
                         opacity: 0.7
                     }
+                }
+            }
+
+            // Slideshow fade-to-black overlay. Sits above all viewer content
+            // (z: 10) but below the page header. Starts transparent; becomes
+            // opaque during transitions so the ListView snap is invisible.
+            Rectangle
+            {
+                id: _transitionOverlay
+                anchors.fill: parent
+                color: "black"
+                opacity: 0
+                z: 10
+                visible: control.slideshowActive
+
+                Behavior on opacity
+                {
+                    NumberAnimation
+                    {
+                        duration: control._fadeDuration
+                        easing.type: Easing.InOutQuad
+                    }
+                }
+
+                function fadeAndAdvance()
+                {
+                    opacity = 1       // triggers fade-to-black animation
+                    _advanceTimer.start()  // fires after _fadeDuration ms
                 }
             }
 

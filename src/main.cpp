@@ -99,8 +99,8 @@ Q_DECL_EXPORT int main(int argc, char *argv[])
 
     QGuiApplication app(argc, argv);
 
-    QImageReader::setAllocationLimit(2000);
-    QPixmapCache::setCacheLimit(20480); // 20 MB cap; thumbnails use image.cache: false
+    QImageReader::setAllocationLimit(512); // Hard cap per image; prevents runaway decodes
+    QPixmapCache::setCacheLimit(153600);  // 150 MB — holds ~600 256×256 thumbnails in RAM
 
     app.setOrganizationName(QStringLiteral("Maui"));
     app.setWindowIcon(QIcon(":/pix.png"));

@@ -81,7 +81,11 @@ Item
             readonly property bool active: StackView.status === StackView.Active
             background: null
 
-            onCloseRequested: control.toggleViewer()
+            onCloseRequested:
+        {
+            _pixViewer.slideshowActive = false
+            control.toggleViewer()
+        }
             onEditRequested: (url) => control.openEditor(url, _stackView)
         }
     }
@@ -358,6 +362,26 @@ Item
         }
 
         _stackView.currentItem.forceActiveFocus()
+    }
+
+    function startSlideshow()
+    {
+        _pixViewer.model.list.recursive = mainGalleryList.recursive
+        _pixViewer.model.list.urls = mainGalleryList.urls
+        _pixViewer.view(0)
+        if (!_pixViewer.active)
+            toggleViewer()
+        _pixViewer.slideshowActive = true
+    }
+
+    function startSlideshowFromModel(galleryList)
+    {
+        _pixViewer.model.list.recursive = galleryList.recursive
+        _pixViewer.model.list.urls = galleryList.urls
+        _pixViewer.view(0)
+        if (!_pixViewer.active)
+            toggleViewer()
+        _pixViewer.slideshowActive = true
     }
 
     function showGallery()

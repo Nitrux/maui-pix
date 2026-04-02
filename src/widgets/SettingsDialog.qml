@@ -117,6 +117,41 @@ Maui.SettingsDialog
 
     Maui.SectionGroup
     {
+        title: i18n("Presentation")
+
+        Maui.FlexSectionItem
+        {
+            label1.text: i18n("Slide Interval")
+            label2.text: i18n("How long each image is shown before advancing.")
+
+            SpinBox
+            {
+                from: 1
+                to: 60
+                value: viewerSettings.slideshowInterval
+                onValueModified: viewerSettings.slideshowInterval = value
+
+                textFromValue: (val) => i18np("%1 second", "%1 seconds", val)
+                valueFromText: (text) => parseInt(text)
+            }
+        }
+
+        Maui.FlexSectionItem
+        {
+            label1.text: i18n("Loop")
+            label2.text: i18n("Restart from the first image after reaching the end.")
+
+            Switch
+            {
+                checkable: true
+                checked: viewerSettings.slideshowLoop
+                onToggled: viewerSettings.slideshowLoop = !viewerSettings.slideshowLoop
+            }
+        }
+    }
+
+    Maui.SectionGroup
+    {
         title: i18n("Sources")
 
         ColumnLayout

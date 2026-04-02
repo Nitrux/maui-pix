@@ -18,8 +18,12 @@ Maui.GridBrowserDelegate
 
     label1.text: model.title
 
-    iconSource: "image-x-generic"
-    imageSource: model.url
+    iconSource: "view-preview"
+    // Don't fall back to model.url — loading full-size originals for every
+    // item in the grid causes massive RAM spikes (GiBs for large collections).
+    // When thumbnail is empty the icon fallback shows instead, and the C++
+    // thumbnail generator will update model.thumbnail once it's ready.
+    imageSource: model.thumbnail ?? ""
 
     fillMode: control.fit ? Image.PreserveAspectFit : Image.PreserveAspectCrop
     template.labelSizeHint: 40
@@ -67,7 +71,7 @@ Maui.GridBrowserDelegate
         {
             id: _iconItem
             iconSource: control.iconSource
-            imageSource: model.url ?? ""
+            imageSource: model.thumbnail ?? ""
 
             highlighted: control.isCurrentItem
             hovered: control.hovered

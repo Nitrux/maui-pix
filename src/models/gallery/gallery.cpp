@@ -5,8 +5,12 @@
 #include <QDebug>
 #include <QDir>
 #include <QTimer>
+#include <QThreadPool>
 #include <QtConcurrent/QtConcurrent>
 #include <QFuture>
+#include <QCryptographicHash>
+#include <QImageReader>
+#include <QStandardPaths>
 
 #include <KLocalizedString>
 
@@ -23,10 +27,92 @@
 
 static QHash<QString, QString> TextInImages; //[url:text] //global cache of text in images
 
+static QString xdgThumbnailPath(const QUrl &url)
+{
+    const QByteArray hash = QCryptographicHash::hash(url.toString().toUtf8(), QCryptographicHash::Md5).toHex();
+    // Use "large" (256×256) for better quality; "normal" is only 128×128
+    return QStandardPaths::writableLocation(QStandardPaths::GenericCacheLocation)
+           + QStringLiteral("/thumbnails/large/") + QString::fromLatin1(hash) + QStringLiteral(".png");
+}
+
+// Fast path: two stat() calls only, no file open, no decoding.
+// Returns the cached thumbnail path if it exists and is newer than the source,
+// or an empty string if the thumbnail needs to be (re)generated.
+static QString cachedXdgThumbnail(const QUrl &url)
+{
+    const QFileInfo info(url.toLocalFile());
+    if (!info.exists())
+        return {};
+
+    const qint64 srcMtime = info.lastModified().toSecsSinceEpoch();
+    const QString thumbPath = xdgThumbnailPath(url);
+    const QFileInfo thumbInfo(thumbPath);
+
+    if (thumbInfo.exists() && thumbInfo.lastModified().toSecsSinceEpoch() >= srcMtime)
+        return QUrl::fromLocalFile(thumbPath).toString();
+
+    return {};
+}
+
+// Full generator: returns a valid thumbnail path, generating the file if needed.
+// Called only from the background thread pool, never from the file scan path.
+static QString ensureXdgThumbnail(const QUrl &url)
+{
+    const QString localPath = url.toLocalFile();
+    const QFileInfo info(localPath);
+    if (!info.exists())
+        return {};
+
+    const qint64 srcMtime = info.lastModified().toSecsSinceEpoch();
+    const QString thumbPath = xdgThumbnailPath(url);
+    const QFileInfo thumbInfo(thumbPath);
+
+    // Fast path: already cached
+    if (thumbInfo.exists() && thumbInfo.lastModified().toSecsSinceEpoch() >= srcMtime)
+        return QUrl::fromLocalFile(thumbPath).toString();
+
+    // Generate thumbnail. QImageReader::setScaledSize triggers JPEG DCT scaling
+    // (native 1/2, 1/4, 1/8 decode), so large JPEGs never need a full decode.
+    QImageReader reader(localPath);
+    if (!reader.canRead())
+        return {};
+
+    const QSize sz = reader.size();
+    if (!sz.isValid())
+        return {};
+
+    reader.setScaledSize(sz.scaled(256, 256, Qt::KeepAspectRatio));
+
+    QImage thumb = reader.read();
+    if (thumb.isNull())
+        return {};
+
+    thumb.setText(QStringLiteral("Thumb::URI"), url.toString());
+    thumb.setText(QStringLiteral("Thumb::MTime"), QString::number(srcMtime));
+
+    QDir().mkpath(QFileInfo(thumbPath).absolutePath());
+
+    // Atomic write: write to a temp file then rename so a partial write is never visible
+    const QString tmpPath = thumbPath + QStringLiteral(".tmp");
+    if (thumb.save(tmpPath, "PNG"))
+    {
+        QFile::remove(thumbPath);
+        if (QFile::rename(tmpPath, thumbPath))
+            return QUrl::fromLocalFile(thumbPath).toString();
+        QFile::remove(tmpPath);
+    }
+
+    return {};
+}
+
 static FMH::MODEL picInfo(const QUrl &url)
 {
     const QFileInfo info(url.toLocalFile());
+    // Use the fast cache-only check here. If no valid thumbnail exists yet the
+    // field is left empty and Gallery::scheduleThumbnails() will generate it in
+    // the background thread pool without blocking the file scan.
     return FMH::MODEL{{FMH::MODEL_KEY::URL, url.toString()},
+                      {FMH::MODEL_KEY::THUMBNAIL, cachedXdgThumbnail(url)},
                       {FMH::MODEL_KEY::TITLE, info.fileName()},
                       {FMH::MODEL_KEY::SIZE, QString::number(info.size())},
                       {FMH::MODEL_KEY::SOURCE, QUrl::fromLocalFile(info.absoluteDir().absolutePath()).toString ()},
@@ -40,21 +126,34 @@ Gallery::Gallery(QObject *parent)
     , m_fileLoader(new FMH::FileLoader(this))
     , m_watcher(new QFileSystemWatcher(this))
     , m_futureWatcher(nullptr)
+    , m_thumbPool(new QThreadPool(this))
     , m_scanTimer(new QTimer(this))
     , m_autoReload(true)
     , m_recursive(true)
 {
     qDebug() << "CREATING GALLERY LIST";
+    // Limit concurrency so thumbnail generation doesn't spike memory.
+    // Two threads: one is usually decoding a source image, the other is saving.
+    m_thumbPool->setMaxThreadCount(2);
     m_scanTimer->setSingleShot(true);
     m_scanTimer->setInterval(15000); //wait 15 secs after a new image is found and before the rescan
 }
 
 Gallery::~Gallery()
 {
+    // Increment generation so any running thumbnail tasks see a stale gen and
+    // return without touching 'this'. Then drain the queue (clear = remove
+    // not-yet-started tasks) and wait for the at-most-2 running tasks to exit.
+    ++m_generation;
+    m_thumbPool->clear();
+    m_thumbPool->waitForDone();
+
     if(m_futureWatcher)
     {
         m_futureWatcher->cancel();
-        m_futureWatcher->deleteLater();
+        m_futureWatcher->waitForFinished();
+        delete m_futureWatcher;
+        m_futureWatcher = nullptr;
     }
 }
 
@@ -301,6 +400,12 @@ void Gallery::clear()
 {
     m_scanTimer->stop();
 
+    // Invalidate all in-flight thumbnail tasks from the previous scan generation.
+    // clear() removes queued (not yet started) tasks; the at-most-2 running tasks
+    // will see the new generation value and exit without modifying the list.
+    ++m_generation;
+    m_thumbPool->clear();
+
     const auto watchedDirs = m_watcher->directories();
     if (!watchedDirs.isEmpty())
         m_watcher->removePaths(watchedDirs);
@@ -395,6 +500,48 @@ void Gallery::updateGpsTag(const QString &url)
     }
 }
 
+void Gallery::scheduleThumbnails(const FMH::MODEL_LIST &newItems, int startIndex)
+{
+    const quint64 gen = m_generation.load(std::memory_order_relaxed);
+
+    for (int i = 0; i < newItems.size(); ++i)
+    {
+        if (!newItems[i][FMH::MODEL_KEY::THUMBNAIL].isEmpty())
+            continue; // Already cached — nothing to do
+
+        const int listIndex = startIndex + i;
+        const QString urlStr = newItems[i][FMH::MODEL_KEY::URL];
+
+        m_thumbPool->start([this, urlStr, listIndex, gen]()
+        {
+            if (m_generation.load(std::memory_order_relaxed) != gen)
+                return;
+
+            const QString thumb = ensureXdgThumbnail(QUrl(urlStr));
+
+            if (thumb.isEmpty() || m_generation.load(std::memory_order_relaxed) != gen)
+                return;
+
+            // Post the model update back to the main thread.
+            // Qt automatically removes all posted events for a QObject when it is
+            // destroyed, so this is safe even if Gallery is deleted first.
+            QMetaObject::invokeMethod(this, [this, urlStr, listIndex, thumb, gen]()
+            {
+                if (m_generation.load(std::memory_order_relaxed) != gen)
+                    return;
+                if (listIndex < 0 || listIndex >= list.size())
+                    return;
+                // Verify the item at listIndex is still the one we generated for
+                if (list[listIndex][FMH::MODEL_KEY::URL] != urlStr)
+                    return;
+
+                list[listIndex][FMH::MODEL_KEY::THUMBNAIL] = thumb;
+                this->updateModel(listIndex, {FMH::MODEL_KEY::THUMBNAIL});
+            }, Qt::QueuedConnection);
+        });
+    }
+}
+
 void Gallery::componentComplete()
 {
     connect(m_fileLoader, &FMH::FileLoader::finished, [this](FMH::MODEL_LIST items) {
@@ -417,10 +564,16 @@ void Gallery::componentComplete()
         if (items.isEmpty())
             return;
 
+        const int startIndex = this->list.size();
         Q_EMIT preItemsAppended(items.size());
         this->list << items;
         Q_EMIT postItemAppended();
         Q_EMIT this->countChanged();
+
+        // Queue thumbnail generation for any items whose thumbnails weren't cached.
+        // This runs after the UI is already showing the scan results, so it doesn't
+        // block first paint. Thumbnails appear progressively as they're generated.
+        scheduleThumbnails(items, startIndex);
     });
 
     connect(m_fileLoader, &FMH::FileLoader::itemReady, [this](FMH::MODEL item) {

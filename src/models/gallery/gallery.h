@@ -4,6 +4,7 @@
 #include <QStringList>
 #include <QFutureWatcher>
 #include <QUrl>
+#include <atomic>
 
 #include <MauiKit4/Core/mauilist.h>
 
@@ -15,6 +16,7 @@ class FileLoader;
 }
 
 class QFileSystemWatcher;
+class QThreadPool;
 class QTimer;
 
 typedef QHash<QString, QString> GpsHash;
@@ -96,9 +98,12 @@ private:
     FMH::FileLoader *m_fileLoader;
     QFileSystemWatcher *m_watcher;
     QFutureWatcher<void> *m_futureWatcher;
+    QThreadPool *m_thumbPool;
 
     QTimer *m_scanTimer;
     FMH::MODEL_LIST list = {};
+
+    std::atomic<quint64> m_generation{0};
 
     QList<QUrl> m_urls;
     QStringList m_cities;
@@ -115,6 +120,7 @@ private:
 
     void scan(const QList<QUrl> &, const bool & = true, const int & = PIX_QUERY_MAX_LIMIT);
     void scanGpsTags();
+    void scheduleThumbnails(const FMH::MODEL_LIST &newItems, int startIndex);
 
     void insert(const FMH::MODEL_LIST &);
 

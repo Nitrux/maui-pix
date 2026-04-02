@@ -78,6 +78,9 @@ Maui.ApplicationWindow
         property int ocrSelectionType: 0
         property bool ocrPreprocessing : false
         property int ocrSegMode: IT.OCR.Auto
+
+        property int slideshowInterval: 5  // seconds per image
+        property bool slideshowLoop: true
     }
 
     Maui.InfoDialog
@@ -223,4 +226,6 @@ Maui.ApplicationWindow
     function showGallery() { appView.showGallery() }
     function showCollections() { appView.showCollections() }
     function showTags() { appView.showTags() }
+    function startSlideshow() { appView.startSlideshow() }
+    function startSlideshowFromModel(galleryList) { appView.startSlideshowFromModel(galleryList) }
 }

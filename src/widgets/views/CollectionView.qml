@@ -73,7 +73,7 @@ Maui.Page
     headBar.leftContent: [
         ToolButton
         {
-            enabled: _foldersView.depth > 1
+            visible: _foldersView.depth > 1
             icon.name: "go-previous"
             onClicked: _foldersView.pop()
         },
@@ -81,6 +81,7 @@ Maui.Page
         ToolSeparator {
             bottomPadding: 10
             topPadding: 10
+            visible: _foldersView.depth > 1
         },
 
         ToolButton
@@ -112,6 +113,13 @@ Maui.Page
     ]
 
     headBar.rightContent: [
+        ToolButton
+        {
+            visible: _foldersView.depth > 1
+            icon.name: "media-playback-start"
+            onClicked: ApplicationWindow.window.startSlideshowFromModel(_foldersView.picsView.list)
+        },
+
         Loader
         {
             active: control.extraOptions !== null

@@ -61,6 +61,12 @@ PixGrid
     ]
 
     headBar.rightContent: [
+        ToolButton
+        {
+            icon.name: "media-playback-start"
+            onClicked: ApplicationWindow.window.startSlideshow()
+        },
+
         Loader
         {
             sourceComponent: control.extraOptions
