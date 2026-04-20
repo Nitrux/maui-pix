@@ -32,6 +32,8 @@ set_source_files_properties(widgets/views/Viewer/Viewer.js PROPERTIES
 
 qt_add_qml_module(${PROJECT_NAME} URI app.maui.pix
     NO_PLUGIN
+    RESOURCE_PREFIX /
+    NO_IMPORT_SCAN
     QML_FILES
     main.qml
     view_models/PixGrid.qml
@@ -85,4 +87,3 @@ install(FILES org.kde.pix.desktop DESTINATION ${KDE_INSTALL_APPDIR})
 install(FILES assets/pix.svg DESTINATION ${KDE_INSTALL_ICONDIR}/hicolor/scalable/apps)
 
 qt_finalize_target(${PROJECT_NAME})
-

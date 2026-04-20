@@ -50,7 +50,7 @@ StackView
 
                 ToolButton
                 {
-                    icon.name: "folder-pictures"
+                    icon.name: "view-preview"
                     onClicked: ApplicationWindow.window.showGallery()
                 },
 
@@ -145,7 +145,7 @@ Component
             headBar.leftContent: [
                 ToolButton
                 {
-                    icon.name: "folder-pictures"
+                    icon.name: "view-preview"
                     onClicked: ApplicationWindow.window.showGallery()
                 },
 
@@ -318,4 +318,3 @@ Component
     }
 
 }
-

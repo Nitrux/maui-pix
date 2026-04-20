@@ -86,7 +86,7 @@ Maui.Page
 
         ToolButton
         {
-            icon.name: "folder-pictures"
+            icon.name: "view-preview"
             onClicked: ApplicationWindow.window.showGallery()
         },
 

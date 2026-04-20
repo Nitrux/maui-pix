@@ -26,13 +26,14 @@ set(REQUIRED_KF_VERSION 5.240.0)
 find_package(ECM ${REQUIRED_KF_VERSION} REQUIRED NO_MODULE)
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake" ${ECM_MODULE_PATH})
 
+include(KDEInstallDirs)
+
 find_package(Qt6 ${REQUIRED_QT_VERSION} REQUIRED NO_MODULE COMPONENTS Core Gui Qml Quick Positioning Concurrent)
 find_package(KF6 ${REQUIRED_KF_VERSION} REQUIRED COMPONENTS I18n CoreAddons KIO WindowSystem)
 
 find_package(MauiKit4 REQUIRED COMPONENTS FileBrowsing ImageTools)
 #find_package(CaskServer REQUIRED)
 
-include(KDEInstallDirs)
 include(KDECMakeSettings)
 include(ECMInstallIcons)
 include(ECMAddAppIcon)
@@ -72,7 +73,7 @@ ecm_setup_version(${PIX_VERSION}
 kde_enable_exceptions()
 
 if (QT_KNOWN_POLICY_QTP0001)
-    qt_policy(SET QTP0001 OLD)
+    qt_policy(SET QTP0001 NEW)
 endif()
 
 if (QT_KNOWN_POLICY_QTP0004)
@@ -91,4 +92,3 @@ file(GLOB_RECURSE ALL_CLANG_FORMAT_SOURCE_FILES *.cpp *.h)
 kde_clang_format(${ALL_CLANG_FORMAT_SOURCE_FILES})
 
 qt_finalize_project()
-
