@@ -18,8 +18,10 @@ PixGrid
     id: control
     list: Pix.Collection.allImagesModel
     background: null
+    property bool useInternalChrome: true
     Maui.Controls.showCSD: true
     headerMargins: Maui.Style.contentMargins
+    headBar.visible: useInternalChrome
 
     holder.emoji: "image-x-generic"
     holder.title : i18n("No Pics!")

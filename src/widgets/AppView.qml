@@ -26,9 +26,29 @@ Item
     readonly property alias viewer : _pixViewer.viewer
     readonly property alias stackView : _stackView
     readonly property alias collectionViewComponent : _collectionViewComponent
+    readonly property alias currentRoute : _stackView.currentItem
 
-    readonly property bool editorVisible : _stackView.currentItem.objectName === "ImageEditor"
-    readonly property bool viewerVisible : _stackView.currentItem.objectName === "Viewer"
+    readonly property bool editorVisible : currentRoute && currentRoute.objectName === "ImageEditor"
+    readonly property bool viewerVisible : currentRoute && currentRoute.objectName === "Viewer"
+    readonly property bool galleryVisible : currentRoute && !viewerVisible && !editorVisible && currentRoute.objectName === "GalleryView"
+    readonly property bool collectionsVisible : currentRoute && !viewerVisible && !editorVisible && currentRoute.objectName === "CollectionView"
+    readonly property bool tagsVisible : currentRoute && !viewerVisible && !editorVisible && currentRoute.objectName === "TagsView"
+    readonly property bool collectionsFolderActive : collectionsVisible && currentRoute && currentRoute.browsingFolder
+    readonly property bool tagsFilterActive : tagsVisible && currentRoute && currentRoute.filteringTag
+    readonly property bool tagsGridActive : tagsVisible && currentRoute && !currentRoute.filteringTag
+    readonly property bool browserSearchVisible : galleryVisible || collectionsVisible || tagsFilterActive
+    readonly property bool browserSortVisible : tagsGridActive
+    readonly property bool shellBackVisible : viewerVisible || collectionsFolderActive || tagsFilterActive
+    readonly property Component currentExtraOptions: galleryVisible && currentRoute
+                                                   ? currentRoute.extraOptions
+                                                   : (collectionsVisible && currentRoute
+                                                      ? currentRoute.extraOptions
+                                                      : (tagsVisible && currentRoute ? currentRoute.currentExtraOptions : null))
+    readonly property var currentSlideshowModel: galleryVisible
+                                               ? mainGalleryList
+                                               : (collectionsVisible && currentRoute
+                                                  ? currentRoute.currentSlideshowModel
+                                                  : (tagsVisible && currentRoute ? currentRoute.currentSlideshowModel : null))
     readonly property var mainGalleryList: Pix.Collection.allImagesModel
 
     Action
@@ -42,7 +62,7 @@ Item
     Component
     {
         id: _galleryViewComponent
-        GalleryView {}
+        GalleryView { useInternalChrome: false }
     }
 
     StackView
@@ -69,7 +89,8 @@ Item
 
         function forceActiveFocus()
         {
-            _stackView.currentItem.forceActiveFocus()
+            if (_stackView.currentItem)
+                _stackView.currentItem.forceActiveFocus()
         }
 
         initialItem: _galleryViewComponent
@@ -78,6 +99,7 @@ Item
         {
             id: _pixViewer
             objectName: "Viewer"
+            useInternalChrome: false
             readonly property bool active: StackView.status === StackView.Active
             background: null
 
@@ -93,13 +115,13 @@ Item
     Component
     {
         id: _collectionViewComponent
-        CollectionView {}
+        CollectionView { useInternalChrome: false }
     }
 
     Component
     {
         id: _tagsViewComponent
-        TagsSidebar { objectName: "TagsView" }
+        TagsSidebar { objectName: "TagsView"; useInternalChrome: false }
     }
 
     property int lastEditorAction : ITEditor.ImageEditor.ActionType.Colors
@@ -348,7 +370,8 @@ Item
             _stackView.push(_pixViewer)
         }
 
-        _stackView.currentItem.forceActiveFocus()
+        if (_stackView.currentItem)
+            _stackView.currentItem.forceActiveFocus()
     }
 
     function startSlideshow()
@@ -374,35 +397,38 @@ Item
     function showGallery()
     {
         _stackView.pop(null)
-        _stackView.currentItem.forceActiveFocus()
+        if (_stackView.currentItem)
+            _stackView.currentItem.forceActiveFocus()
     }
 
     function showCollections()
     {
-        if(_stackView.currentItem.objectName === "CollectionView")
+        if(currentRoute && currentRoute.objectName === "CollectionView")
             return
 
         if(_pixViewer.active)
             _stackView.pop()
 
-        if(_stackView.currentItem.objectName !== "CollectionView")
+        if(!currentRoute || currentRoute.objectName !== "CollectionView")
             _stackView.push(_collectionViewComponent)
 
-        _stackView.currentItem.forceActiveFocus()
+        if (_stackView.currentItem)
+            _stackView.currentItem.forceActiveFocus()
     }
 
     function showTags()
     {
-        if(_stackView.currentItem.objectName === "TagsView")
+        if(currentRoute && currentRoute.objectName === "TagsView")
             return
 
         if(_pixViewer.active)
             _stackView.pop()
 
-        if(_stackView.currentItem.objectName !== "TagsView")
+        if(!currentRoute || currentRoute.objectName !== "TagsView")
             _stackView.push(_tagsViewComponent)
 
-        _stackView.currentItem.forceActiveFocus()
+        if (_stackView.currentItem)
+            _stackView.currentItem.forceActiveFocus()
     }
 
     function openFileDialog()
@@ -429,12 +455,13 @@ Item
             _stackView.pop()
         }
 
-        if(_stackView.currentItem.objectName !== "CollectionView")
+        if(!currentRoute || currentRoute.objectName !== "CollectionView")
         {
             _stackView.push(_collectionViewComponent)
         }
 
-        _stackView.currentItem.openFolder(url, filters)
+        if (_stackView.currentItem)
+            _stackView.currentItem.openFolder(url, filters)
     }
 
     function openEditor(url, stack)

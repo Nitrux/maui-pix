@@ -19,6 +19,7 @@ import "../../../view_models"
 Maui.Page
 {
     id: control
+    property bool useInternalChrome: true
 
     Keys.forwardTo: viewer
     Keys.enabled: true
@@ -112,6 +113,8 @@ Maui.Page
     floatingHeader: true
     autoHideHeader: viewer.imageZooming
     headerMargins: Maui.Style.contentMargins
+
+    headBar.visible: useInternalChrome
 
     headBar.leftContent: [
         ToolButton
@@ -529,5 +532,4 @@ Maui.Page
     }
 
 }
-
 

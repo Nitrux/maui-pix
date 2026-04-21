@@ -52,6 +52,9 @@ Maui.ApplicationWindow
                                              medium: 90,
                                              large: 120,
                                              extralarge: 160})
+    readonly property string browserSearchPlaceholder: appView.collectionsVisible
+                                                       ? (appView.collectionsFolderActive ? i18n("Search pictures") : i18n("Search collections"))
+                                                       : i18n("Search pictures")
 
     Settings
     {
@@ -133,9 +136,187 @@ Maui.ApplicationWindow
 
     Maui.Page
     {
+        id: _shellPage
         anchors.fill: parent
         background: null
-        headBar.visible: false
+        headBar.visible: !appView.editorVisible
+        altHeader: appView.viewerVisible && Maui.Handy.isMobile
+        floatingHeader: appView.viewerVisible
+        autoHideHeader: appView.viewerVisible && appView.pixViewer.viewer.imageZooming
+        headerMargins: Maui.Style.contentMargins
+
+        headBar.leftContent: [
+            ToolButton
+            {
+                visible: appView.shellBackVisible
+                icon.name: "go-previous"
+                onClicked: handleToolbarBack()
+            },
+
+            ToolSeparator
+            {
+                visible: appView.shellBackVisible
+                bottomPadding: 10
+                topPadding: 10
+            },
+
+            ToolButton
+            {
+                icon.name: "view-preview"
+                onClicked: showGallery()
+            },
+
+            ToolButton
+            {
+                icon.name: "folder"
+                onClicked: showCollections()
+            },
+
+            ToolButton
+            {
+                icon.name: "tag"
+                onClicked: showTags()
+            },
+
+            ToolSeparator
+            {
+                visible: appView.browserSearchVisible || appView.browserSortVisible || appView.viewerVisible
+                bottomPadding: 10
+                topPadding: 10
+            },
+
+            Maui.SearchField
+            {
+                id: _toolbarSearchField
+                visible: appView.browserSearchVisible
+                enabled: visible
+                implicitWidth: 250
+                placeholderText: browserSearchPlaceholder
+                onTextChanged:
+                {
+                    if (appView.browserSearchVisible && appView.currentRoute && appView.currentRoute.search)
+                        appView.currentRoute.search(text)
+                }
+                onCleared:
+                {
+                    if (appView.browserSearchVisible && appView.currentRoute && appView.currentRoute.clearSearch)
+                        appView.currentRoute.clearSearch()
+                }
+                Keys.priority: Keys.AfterItem
+                Keys.onReturnPressed: event.accepted = true
+            },
+
+            Label
+            {
+                visible: appView.browserSortVisible
+                text: i18n("Sort")
+                font.weight: Font.DemiBold
+                verticalAlignment: Text.AlignVCenter
+            },
+
+            ComboBox
+            {
+                id: _tagsSortComboBox
+                visible: appView.browserSortVisible
+                implicitWidth: 180
+                model: [
+                    i18n("Name (A-Z)"),
+                    i18n("Name (Z-A)"),
+                    i18n("Date (newest)"),
+                    i18n("Date (oldest)")
+                ]
+
+                Binding on currentIndex
+                {
+                    when: appView.browserSortVisible && appView.currentRoute && appView.currentRoute.currentSortIndex
+                    value: appView.currentRoute.currentSortIndex()
+                    restoreMode: Binding.RestoreBinding
+                }
+
+                onActivated: (index) =>
+                {
+                    if (appView.browserSortVisible && appView.currentRoute && appView.currentRoute.applySort)
+                        appView.currentRoute.applySort(index)
+                }
+            },
+
+            ToolButton
+            {
+                visible: appView.viewerVisible
+                icon.name: "view-fullscreen"
+                checked: root.fullScreen
+                onClicked: root.fullScreen ? root.showNormal() : root.showFullScreen()
+            },
+
+            ToolButton
+            {
+                visible: appView.viewerVisible
+                icon.name: "draw-freehand"
+                onClicked: appView.openEditor(appView.pixViewer.currentPic.url, appView.stackView)
+            }
+        ]
+
+        headBar.rightContent: [
+            ToolButton
+            {
+                visible: appView.viewerVisible && appView.pixViewer.slideshowActive
+                icon.name: "media-playback-stop"
+                onClicked: appView.pixViewer.slideshowActive = false
+            },
+
+            ToolButton
+            {
+                visible: !appView.viewerVisible && !appView.editorVisible && appView.currentSlideshowModel
+                icon.name: "media-playback-start"
+                onClicked: startSlideshowForCurrentRoute()
+            },
+
+            ToolButton
+            {
+                visible: appView.viewerVisible
+                icon.name: "documentinfo"
+                onClicked: getFileInfo(appView.pixViewer.currentPic.url)
+            },
+
+            ToolButton
+            {
+                visible: appView.viewerVisible
+                icon.name: "edit-delete"
+                onClicked: removeFiles([appView.pixViewer.currentPic.url])
+            },
+
+            Loader
+            {
+                active: !appView.viewerVisible && !appView.editorVisible && appView.currentExtraOptions !== null
+                sourceComponent: appView.currentExtraOptions
+            },
+
+            ToolSeparator
+            {
+                visible: appView.viewerVisible || (!appView.editorVisible && appView.currentExtraOptions !== null)
+                bottomPadding: 10
+                topPadding: 10
+            },
+
+            Maui.ToolButtonMenu
+            {
+                icon.name: "overflow-menu"
+
+                MenuItem
+                {
+                    text: i18n("Preferences")
+                    icon.name: "settings-configure"
+                    onTriggered: openSettingsDialog()
+                }
+
+                MenuItem
+                {
+                    text: i18n("About")
+                    icon.name: "documentinfo"
+                    onTriggered: Maui.App.aboutDialog()
+                }
+            }
+        ]
 
         AppView
         {
@@ -175,6 +356,32 @@ Maui.ApplicationWindow
         }
     }
 
+    Connections
+    {
+        target: appView.stackView
+
+        function onCurrentItemChanged()
+        {
+            resetToolbarSearch()
+        }
+    }
+
+    Connections
+    {
+        target: appView.currentRoute
+        ignoreUnknownSignals: true
+
+        function onBrowsingFolderChanged()
+        {
+            resetToolbarSearch()
+        }
+
+        function onFilteringTagChanged()
+        {
+            resetToolbarSearch()
+        }
+    }
+
     function fav(urls)
     {
         for(const i in urls)
@@ -211,6 +418,26 @@ Maui.ApplicationWindow
     }
 
     function setPreviewSize(size) { browserSettings.previewSize = size }
+    function resetToolbarSearch() { _toolbarSearchField.text = "" }
+    function handleToolbarBack()
+    {
+        if (appView.viewerVisible) {
+            appView.toggleViewer()
+            return
+        }
+
+        if (appView.currentRoute && appView.currentRoute.goBack) {
+            resetToolbarSearch()
+            appView.currentRoute.goBack()
+            if (appView.currentRoute && appView.currentRoute.forceActiveFocus)
+                appView.currentRoute.forceActiveFocus()
+        }
+    }
+    function startSlideshowForCurrentRoute()
+    {
+        if (appView.currentSlideshowModel)
+            appView.startSlideshowFromModel(appView.currentSlideshowModel)
+    }
     function getFileInfo(url) { appView.getFileInfo(url) }
     function removeFiles(urls) { appView.removeFiles(urls) }
     function saveAs(urls) { appView.saveAs(urls) }
@@ -220,12 +447,12 @@ Maui.ApplicationWindow
     function openFileDialog() { appView.openFileDialog() }
     function openSettingsDialog() { appView.openSettingsDialog() }
     function openFolder(url, filters) { appView.openFolder(url, filters) }
-    function toggleViewer() { appView.toggleViewer() }
+    function toggleViewer() { resetToolbarSearch(); appView.toggleViewer() }
     function toogleTagbar() { appView.toogleTagbar() }
     function tooglePreviewBar() { appView.tooglePreviewBar() }
-    function showGallery() { appView.showGallery() }
-    function showCollections() { appView.showCollections() }
-    function showTags() { appView.showTags() }
+    function showGallery() { resetToolbarSearch(); appView.showGallery() }
+    function showCollections() { resetToolbarSearch(); appView.showCollections() }
+    function showTags() { resetToolbarSearch(); appView.showTags() }
     function startSlideshow() { appView.startSlideshow() }
     function startSlideshowFromModel(galleryList) { appView.startSlideshowFromModel(galleryList) }
 }

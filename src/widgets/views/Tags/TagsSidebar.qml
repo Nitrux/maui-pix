@@ -17,7 +17,11 @@ StackView
     id: control
     background: null
 
-    readonly property Flickable flickable : currentItem.flickable
+    property bool useInternalChrome: true
+    readonly property bool filteringTag: depth > 1
+    readonly property Flickable flickable : currentItem ? currentItem.flickable : null
+    readonly property Component currentExtraOptions: filteringTag && currentItem ? currentItem.extraOptions : null
+    readonly property var currentSlideshowModel: filteringTag && currentItem ? currentItem.list : null
 
     initialItem: _frontPageComponent
 
@@ -28,13 +32,14 @@ StackView
         TagsView
         {
             id: _tagGridView
+            property bool useInternalChrome: control.useInternalChrome
             background: null
             list.urls: ["tags:///" + currentTag]
             list.recursive: false
 
             Maui.Controls.showCSD: true
             headerMargins: Maui.Style.contentMargins
-            headBar.visible: true
+            headBar.visible: useInternalChrome
 
             headBar.leftContent: [
                 ToolButton
@@ -129,6 +134,7 @@ Component
         Maui.Page
         {
             id: _frontPage
+            property bool useInternalChrome: control.useInternalChrome
             background: null
 
             Maui.Theme.inherit: false
@@ -139,8 +145,33 @@ Component
 
             flickable: _gridView.flickable
 
-            headBar.visible: true
+            headBar.visible: useInternalChrome
             headBar.forceCenterMiddleContent: false
+
+            function currentSortIndex()
+            {
+                const sorts = _sortComboBox._sorts
+
+                for (let i = 0; i < sorts.length; ++i) {
+                    const option = sorts[i]
+
+                    if (_tagsModel.sort === option.sort && _tagsModel.sortOrder === option.order)
+                        return i
+                }
+
+                return 0
+            }
+
+            function applySort(index)
+            {
+                const sorts = _sortComboBox._sorts
+
+                if (index < 0 || index >= sorts.length)
+                    return
+
+                _tagsModel.sort = sorts[index].sort
+                _tagsModel.sortOrder = sorts[index].order
+            }
 
             headBar.leftContent: [
                 ToolButton
@@ -315,6 +346,35 @@ Component
     function populateGrid(myTag)
     {
         control.push(tagsGrid, {'currentTag': myTag})
+    }
+
+    function search(text)
+    {
+        if (filteringTag && currentItem && currentItem.search)
+            currentItem.search(text)
+    }
+
+    function clearSearch()
+    {
+        if (filteringTag && currentItem && currentItem.clearSearch)
+            currentItem.clearSearch()
+    }
+
+    function goBack()
+    {
+        if (filteringTag)
+            control.pop()
+    }
+
+    function currentSortIndex()
+    {
+        return !filteringTag && currentItem && currentItem.currentSortIndex ? currentItem.currentSortIndex() : 0
+    }
+
+    function applySort(index)
+    {
+        if (!filteringTag && currentItem && currentItem.applySort)
+            currentItem.applySort(index)
     }
 
 }

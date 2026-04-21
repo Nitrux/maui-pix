@@ -38,8 +38,10 @@ Maui.Page
     objectName: "CollectionView"
 
     background: null
+    property bool useInternalChrome: true
     Maui.Controls.showCSD: true
     headerMargins: Maui.Style.contentMargins
+    headBar.visible: useInternalChrome
 
     focus: true
     focusPolicy: Qt.StrongFocus
@@ -49,6 +51,8 @@ Maui.Page
 
     readonly property var mainGalleryList : Pix.Collection.allImagesModel
     property alias currentFolder :_foldersView.currentFolder
+    readonly property bool browsingFolder: _foldersView.depth > 1
+    readonly property var currentSlideshowModel: browsingFolder ? _foldersView.picsView.list : null
 
     Binding
     {
