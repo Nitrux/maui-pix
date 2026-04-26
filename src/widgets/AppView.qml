@@ -345,6 +345,9 @@ Item
 
     function getFileInfo(url)
     {
+        if (!url || String(url).length === 0)
+            return
+
         var dialog = _infoDialogComponent.createObject(control, ({'url': url}))
         dialog.open()
     }
@@ -465,15 +468,24 @@ Item
 
     function openEditor(url, stack)
     {
+        if (!url || String(url).length === 0)
+            return
+
         stack.push(_editorComponent, ({url: url}))
     }
 
     function openExternalPics(pics, index)
     {
-        var oldIndex = pics.lenght-1
+        const count = pics ? pics.length : 0
+        if (count === 0)
+            return
+
+        const lastIndex = Math.max(count - 1, 0)
+        const requestedIndex = typeof index === "number" ? index : 0
+        const targetIndex = Math.min(Math.max(requestedIndex, 0), lastIndex)
         pixViewer.viewer.clear()
         pixViewer.viewer.appendPics(pics)
-        pixViewer.view(Math.max(oldIndex, index, 0))
+        pixViewer.view(targetIndex)
         if(!pixViewer.active)
         {
             toggleViewer()
@@ -482,14 +494,9 @@ Item
 
     function open(model, index, recursive = false)
     {
-        pixViewer.model.list.recursive = model.list.recursive
-        pixViewer.model.list.urls = model.list.urls
-
-        pixViewer.view( pixViewer.model.mappedFromSource(index))
-        if(!pixViewer.active)
-        {
-            toggleViewer()
-        }
+        const targetIndex = model.mappedFromSource(index)
+        const pics = model.getAll().map((item) => item.url).filter((url) => url && String(url).length > 0)
+        openExternalPics(pics, targetIndex)
     }
 
     function openTagsDialog(urls)
@@ -507,7 +514,11 @@ Item
 
     function saveAs(urls)
     {
-        let pic = urls[0]
+        const cleanUrls = (urls || []).filter((url) => url && String(url).length > 0)
+        if (cleanUrls.length === 0)
+            return
+
+        let pic = cleanUrls[0]
         let props = ({'mode' : FB.FileDialog.Save,
                          'browser.settings.filterType' : FB.FMList.IMAGE,
                          'singleSelection' : true,
@@ -515,7 +526,7 @@ Item
                          'callback' : function(paths)
                          {
                              console.log("Sate to ", paths)
-                             FB.FM.copy(urls, paths[0])
+                             FB.FM.copy(cleanUrls, paths[0])
 
                          }})
         var dialog = fmDialogComponent.createObject(control, props)
@@ -524,19 +535,27 @@ Item
 
     function removeFiles(urls)
     {
-        var dialog = _removeDialogComponent.createObject(control, ({'urls' : urls}))
+        const cleanUrls = (urls || []).filter((url) => url && String(url).length > 0)
+        if (cleanUrls.length === 0)
+            return
+
+        var dialog = _removeDialogComponent.createObject(control, ({'urls' : cleanUrls}))
         dialog.open()
     }
 
     function openFileWith(urls)
     {
+        const cleanUrls = (urls || []).filter((url) => url && String(url).length > 0)
+        if (cleanUrls.length === 0)
+            return
+
         if(Maui.Handy.isAndroid)
         {
-            FB.FM.openUrl(item.url)
+            FB.FM.openUrl(cleanUrls[0])
             return
         }
 
-        _openWithDialog.urls = urls
+        _openWithDialog.urls = cleanUrls
         _openWithDialog.open()
     }
 }

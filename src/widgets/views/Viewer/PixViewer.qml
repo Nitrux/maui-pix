@@ -55,9 +55,16 @@ Maui.Page
     readonly property alias model : viewer.model
 
     property bool currentPicFav: false
-    property var currentPic : ({})
+    property var currentPic : ({url: "", title: ""})
+    readonly property string currentPicUrl: currentPic && currentPic.url ? String(currentPic.url) : ""
+    readonly property string currentPicTitle: currentPic && currentPic.title ? String(currentPic.title) : ""
     property int currentPicIndex : 0
     property bool doodle : false
+    onCurrentPicChanged:
+    {
+        control.currentPicFav = control.currentPicUrl.length > 0 && FB.Tagging.isFav(control.currentPicUrl)
+        root.title = control.currentPicTitle
+    }
 
     property bool slideshowActive: false
     onSlideshowActiveChanged: if (!slideshowActive) { _advanceTimer.stop(); _transitionOverlay.opacity = 0 }
@@ -105,7 +112,7 @@ Maui.Page
 
     onGoBackTriggered: control.closeRequested()
 
-    title: currentPic.title
+    title: currentPicTitle
     showTitle: true
 
     Maui.Controls.showCSD: true
@@ -138,7 +145,11 @@ Maui.Page
         ToolButton
         {
             icon.name: "draw-freehand"
-            onClicked: control.editRequested(control.currentPic.url)
+            onClicked:
+            {
+                if (control.currentPicUrl.length > 0)
+                    control.editRequested(control.currentPicUrl)
+            }
         }
     ]
 
@@ -153,13 +164,13 @@ Maui.Page
         ToolButton
         {
             icon.name: "documentinfo"
-            onClicked: getFileInfo(control.currentPic.url)
+            onClicked: getFileInfo(control.currentPicUrl)
         },
 
         ToolButton
         {
             icon.name: "edit-delete"
-            onClicked: removeFiles([control.currentPic.url])
+            onClicked: removeFiles([control.currentPicUrl])
         },
 
         ToolSeparator {
@@ -191,7 +202,7 @@ Maui.Page
     {
         id: _alertBar
         visible: (_watcher.modified || _watcher.deleted)
-        width: parent.width
+        width: parent ? parent.width : 0
 
         background: Rectangle
         {
@@ -208,7 +219,7 @@ Maui.Page
             property bool deleted : false
             property bool autoRefresh : false
 
-            url: currentPic.url
+            url: currentPicUrl
             onFileModified:
             {
                 if(autoRefresh)
@@ -271,7 +282,7 @@ Maui.Page
                 visible: _watcher.deleted
                 Maui.Controls.status: Maui.Controls.Positive
 
-                onClicked: saveAs([currentPic.url])
+                onClicked: saveAs([currentPicUrl])
             }
         ]
     }
@@ -457,7 +468,7 @@ Maui.Page
             sourceComponent: FB.TagsBar
             {
                 allowEditMode: true
-                list.urls: [currentPic.url]
+                list.urls: currentPicUrl.length > 0 ? [currentPicUrl] : []
                 list.strict: false
 
                 onTagRemovedClicked: (index) => list.removeFromUrls(index)
@@ -499,29 +510,20 @@ Maui.Page
     function incrementCurrentIndex()
     {
         control.currentPicIndex++
-        control.currentPic = control.model.get(control.currentPicIndex)
-
-        control.currentPicFav = FB.Tagging.isFav(control.currentPic.url)
-        root.title = control.currentPic.title
+        control.currentPic = control.model.get(control.currentPicIndex) ?? ({url: "", title: ""})
     }
 
     function decrementCurrentIndex()
     {
         control.currentPicIndex--
-        control.currentPic = control.model.get(control.currentPicIndex)
-
-        control.currentPicFav = FB.Tagging.isFav(control.currentPic.url)
-        root.title = control.currentPic.title
+        control.currentPic = control.model.get(control.currentPicIndex) ?? ({url: "", title: ""})
     }
 
     function view(index : int)
     {
         {
             control.currentPicIndex = index
-            control.currentPic = control.model.get(control.currentPicIndex)
-
-            control.currentPicFav = FB.Tagging.isFav(control.currentPic.url)
-            root.title = control.currentPic.title
+            control.currentPic = control.model.get(control.currentPicIndex) ?? ({url: "", title: ""})
             viewer.forceActiveFocus()
         }
     }
@@ -532,4 +534,3 @@ Maui.Page
     }
 
 }
-

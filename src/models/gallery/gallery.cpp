@@ -384,16 +384,22 @@ void Gallery::removeFiles(const QStringList &urls)
 
 void Gallery::append(const QVariantMap &pic)
 {
+    const int startIndex = this->list.size();
+    const auto item = FMH::toModel(pic);
     Q_EMIT this->preItemAppended();
-    this->list << FMH::toModel(pic);
+    this->list << item;
     Q_EMIT this->postItemAppended();
+    scheduleThumbnails(FMH::MODEL_LIST{item}, startIndex);
 }
 
 void Gallery::append(const QString &url)
 {
+    const int startIndex = this->list.size();
+    const auto item = picInfo(QUrl::fromUserInput(url));
     Q_EMIT this->preItemAppended();
-    this->list << picInfo(QUrl::fromUserInput(url));
+    this->list << item;
     Q_EMIT this->postItemAppended();
+    scheduleThumbnails(FMH::MODEL_LIST{item}, startIndex);
 }
 
 void Gallery::clear()

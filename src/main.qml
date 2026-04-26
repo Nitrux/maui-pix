@@ -228,14 +228,20 @@ Maui.ApplicationWindow
 
                 Binding on currentIndex
                 {
-                    when: appView.browserSortVisible && appView.currentRoute && appView.currentRoute.currentSortIndex
-                    value: appView.currentRoute.currentSortIndex()
+                    when: appView.browserSortVisible
+                          && appView.currentRoute
+                          && typeof appView.currentRoute.currentSortIndex === "function"
+                    value: typeof appView.currentRoute.currentSortIndex === "function"
+                           ? appView.currentRoute.currentSortIndex()
+                           : 0
                     restoreMode: Binding.RestoreBinding
                 }
 
                 onActivated: (index) =>
                 {
-                    if (appView.browserSortVisible && appView.currentRoute && appView.currentRoute.applySort)
+                    if (appView.browserSortVisible
+                            && appView.currentRoute
+                            && typeof appView.currentRoute.applySort === "function")
                         appView.currentRoute.applySort(index)
                 }
             },
@@ -252,7 +258,7 @@ Maui.ApplicationWindow
             {
                 visible: appView.viewerVisible
                 icon.name: "draw-freehand"
-                onClicked: appView.openEditor(appView.pixViewer.currentPic.url, appView.stackView)
+                onClicked: appView.openEditor(appView.pixViewer.currentPicUrl, appView.stackView)
             }
         ]
 
@@ -275,14 +281,14 @@ Maui.ApplicationWindow
             {
                 visible: appView.viewerVisible
                 icon.name: "documentinfo"
-                onClicked: getFileInfo(appView.pixViewer.currentPic.url)
+                onClicked: getFileInfo(appView.pixViewer.currentPicUrl)
             },
 
             ToolButton
             {
                 visible: appView.viewerVisible
                 icon.name: "edit-delete"
-                onClicked: removeFiles([appView.pixViewer.currentPic.url])
+                onClicked: removeFiles([appView.pixViewer.currentPicUrl])
             },
 
             Loader
