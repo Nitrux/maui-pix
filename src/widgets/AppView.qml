@@ -281,7 +281,6 @@ Item
                     _taggedNotification.dispatch()
                 }
                 browserSettings.lastUsedTag = tags[0]
-                composerList.updateToUrls(tags)
             }
 
             composerList.strict: false
