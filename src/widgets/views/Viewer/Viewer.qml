@@ -44,7 +44,7 @@ Item
       **/
     readonly property bool isAnimated : currentItem ? currentItem.isAnimated : false
 
-    clip: false
+    clip: true
     focus: true
     focusPolicy: Qt.StrongFocus
 
@@ -93,6 +93,38 @@ Item
         control.currentItem.active = true
     }
 
+    function resetItemView(viewItem)
+    {
+        if (!viewItem)
+            return
+
+        if (viewItem.hasOwnProperty("interactive"))
+            viewItem.interactive = false
+
+        if (viewItem.hasOwnProperty("contentX"))
+            viewItem.contentX = 0
+
+        if (viewItem.hasOwnProperty("contentY"))
+            viewItem.contentY = 0
+
+        if (viewItem.hasOwnProperty("contentWidth"))
+            viewItem.contentWidth = viewItem.width
+
+        if (viewItem.hasOwnProperty("contentHeight"))
+            viewItem.contentHeight = viewItem.height
+
+        if (viewItem.hasOwnProperty("returnToBounds"))
+            viewItem.returnToBounds()
+    }
+
+    function prepareCurrentItemForNavigation()
+    {
+        if (!viewerList.currentItem || !viewerList.currentItem.item)
+            return
+
+        resetItemView(viewerList.currentItem.item)
+    }
+
     Action
     {
         id: _copyAction
@@ -117,6 +149,7 @@ Item
         id: viewerList
         height: parent.height
         width: parent.width
+        clip: true
         orientation: ListView.Horizontal
 
         Binding on currentIndex
@@ -251,6 +284,7 @@ Item
         delegate: Loader
         {
             id: _viewerLoaderDelegate
+            clip: true
 
             Keys.enabled: true
             Keys.forwardTo: item

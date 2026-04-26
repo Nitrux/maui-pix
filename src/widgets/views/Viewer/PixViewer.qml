@@ -171,11 +171,24 @@ Maui.Page
         {
             icon.name: "edit-delete"
             onClicked: removeFiles([control.currentPicUrl])
-        },
+        }
+    ]
 
-        ToolSeparator {
-            bottomPadding: 10
-            topPadding: 10
+    headBar.farRightContent: [
+        Item
+        {
+            implicitWidth: Maui.Style.iconSizes.medium
+            implicitHeight: parent ? parent.height : Maui.Style.rowHeight
+
+            Rectangle
+            {
+                width: 1
+                radius: width / 2
+                color: Maui.Theme.textColor
+                opacity: 0.3
+                anchors.centerIn: parent
+                height: Math.max(parent.height - 20, 12)
+            }
         },
 
         Maui.ToolButtonMenu
@@ -522,6 +535,9 @@ Maui.Page
     function view(index : int)
     {
         {
+            if (index !== control.currentPicIndex)
+                viewer.prepareCurrentItemForNavigation()
+
             control.currentPicIndex = index
             control.currentPic = control.model.get(control.currentPicIndex) ?? ({url: "", title: ""})
             viewer.forceActiveFocus()
