@@ -31,6 +31,32 @@ Maui.Page
 
     property alias currentIndex: _gridView.currentIndex
     property string typingQuery
+    readonly property int minimumPreviewSize: effectivePreviewSize("small")
+    readonly property int maximumPreviewSize: effectivePreviewSize("extralarge")
+
+    onItemSizeChanged:
+    {
+        console.debug("PixGrid itemSize changed", itemSize, "preset", browserSettings.previewSizePreset, "gridWheelResizeEnabled", _gridView.wheelResizeEnabled)
+
+        if (_gridView && _gridView.itemSize !== itemSize)
+            _gridView.itemSize = itemSize
+    }
+
+    function clampPreviewSize(size)
+    {
+        return Math.max(minimumPreviewSize, Math.min(maximumPreviewSize, size))
+    }
+
+    function applyPreviewPreset(preset)
+    {
+        const size = effectivePreviewSize(preset)
+
+        if (browserSettings.previewSizePreset !== preset)
+            browserSettings.previewSizePreset = preset
+
+        if (_gridView.itemSize !== size)
+            _gridView.itemSize = size
+    }
 
     property GalleryList list : GalleryList
     {
@@ -109,14 +135,14 @@ Maui.Page
                 Action
                 {
                     text: i18n("S")
-                    onTriggered: setPreviewSize("small")
+                    onTriggered: applyPreviewPreset("small")
                     checked: browserSettings.previewSizePreset === "small"
                 }
 
                 Action
                 {
                     text: i18n("M")
-                    onTriggered: setPreviewSize("medium")
+                    onTriggered: applyPreviewPreset("medium")
                     checked: browserSettings.previewSizePreset === "medium"
 
                 }
@@ -124,7 +150,7 @@ Maui.Page
                 Action
                 {
                     text: i18n("X")
-                    onTriggered: setPreviewSize("large")
+                    onTriggered: applyPreviewPreset("large")
                     checked: browserSettings.previewSizePreset === "large"
 
                 }
@@ -132,7 +158,7 @@ Maui.Page
                 Action
                 {
                     text: i18n("XL")
-                    onTriggered: setPreviewSize("extralarge")
+                    onTriggered: applyPreviewPreset("extralarge")
                     checked: browserSettings.previewSizePreset === "extralarge"
 
                 }
@@ -209,11 +235,26 @@ Maui.Page
         holder.visible: _gridView.count === 0
 
         adaptContent: false
-        wheelResizeEnabled: false
+        wheelResizeEnabled: true
         itemSize : control.itemSize
         itemHeight: browserSettings.showLabels ? _gridView.itemSize * 1.5 : _gridView.itemSize
         cacheBuffer: control.height
         flickable.reuseItems: true
+
+        Component.onCompleted:
+        {
+            console.debug("PixGrid GridBrowser ready", "itemSize", itemSize, "wheelResizeEnabled", wheelResizeEnabled, "adaptContent", adaptContent)
+        }
+
+        onItemSizeChanged:
+        {
+            const clampedSize = control.clampPreviewSize(itemSize)
+            if (clampedSize !== itemSize)
+            {
+                console.debug("PixGrid clamping wheel-resized itemSize", itemSize, "to", clampedSize, "allowedRange", control.minimumPreviewSize, control.maximumPreviewSize)
+                itemSize = clampedSize
+            }
+        }
 
         Loader
         {
@@ -286,6 +327,13 @@ Maui.Page
                             const index = control.currentIndex
                             const item = control.model.get(index)
 
+                            if(event.key === Qt.Key_Space)
+                            {
+                                getFileInfo(item.url)
+                                event.accepted = true
+                                return
+                            }
+
                             var pat = /^([a-zA-Z0-9 _-]+)$/
                             if(event.count === 1 && pat.test(event.text))
                             {
@@ -304,13 +352,6 @@ Maui.Page
                             if((event.key == Qt.Key_Left || event.key == Qt.Key_Right || event.key == Qt.Key_Down || event.key == Qt.Key_Up) && (event.modifiers & Qt.ControlModifier) && (event.modifiers & Qt.ShiftModifier))
                             {
                                 _gridView.itemsSelected([index])
-                                event.accepted = true
-                                return
-                            }
-
-                            if(event.key === Qt.Key_Space)
-                            {
-                                getFileInfo(item.url)
                                 event.accepted = true
                                 return
                             }

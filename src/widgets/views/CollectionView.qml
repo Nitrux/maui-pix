@@ -52,6 +52,7 @@ Maui.Page
     readonly property var mainGalleryList : Pix.Collection.allImagesModel
     property alias currentFolder :_foldersView.currentFolder
     readonly property bool browsingFolder: _foldersView.depth > 1
+    readonly property var activeGrid: browsingFolder ? _foldersView.picsView : null
     readonly property var currentSlideshowModel: browsingFolder ? _foldersView.picsView.list : null
 
     Binding
@@ -139,6 +140,13 @@ Maui.Page
         Maui.ToolButtonMenu
         {
             icon.name: "overflow-menu"
+
+            MenuItem
+            {
+                text: i18n("Shortcuts")
+                icon.name: "configure-shortcuts"
+                onTriggered: ApplicationWindow.window.openShortcutsDialog()
+            }
 
             MenuItem
             {

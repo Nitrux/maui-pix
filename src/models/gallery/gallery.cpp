@@ -4,6 +4,7 @@
 #include <QDateTime>
 #include <QDebug>
 #include <QDir>
+#include <QDirIterator>
 #include <QTimer>
 #include <QThreadPool>
 #include <QtConcurrent/QtConcurrent>
@@ -242,6 +243,9 @@ void Gallery::scan(const QList<QUrl> &urls, const bool &recursive, const int &li
         }
     }
 
+    if (m_autoReload)
+        watchSourceDirectories(urls, recursive);
+
     m_fileLoader->requestPath(urls, recursive, QStringList() << FMStatic::FILTER_LIST[FMStatic::FILTER_TYPE::IMAGE], QDir::Files, limit);
 }
 
@@ -303,6 +307,31 @@ void Gallery::insertFolder(const QUrl &path)
 
         if (m_autoReload) {
             this->m_watcher->addPath(path.toLocalFile());
+        }
+    }
+}
+
+void Gallery::watchSourceDirectories(const QList<QUrl> &urls, bool recursive)
+{
+    for (const auto &url : urls)
+    {
+        if (!url.isLocalFile())
+            continue;
+
+        const QString rootPath = url.toLocalFile();
+        const QFileInfo rootInfo(rootPath);
+        if (!rootInfo.exists() || !rootInfo.isDir())
+            continue;
+
+        m_watcher->addPath(rootPath);
+
+        if (!recursive)
+            continue;
+
+        QDirIterator it(rootPath, QDir::Dirs | QDir::NoDotAndDotDot, QDirIterator::Subdirectories);
+        while (it.hasNext())
+        {
+            m_watcher->addPath(it.next());
         }
     }
 }

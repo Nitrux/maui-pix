@@ -83,19 +83,26 @@ PixGrid
         {
             icon.name: "overflow-menu"
 
-        MenuItem
-        {
-            text: i18n("Preferences")
-            icon.name: "settings-configure"
-            onTriggered: ApplicationWindow.window.openSettingsDialog()
-        }
+            MenuItem
+            {
+                text: i18n("Shortcuts")
+                icon.name: "configure-shortcuts"
+                onTriggered: ApplicationWindow.window.openShortcutsDialog()
+            }
 
-        MenuItem
-        {
-            text: i18n("About")
-            icon.name: "documentinfo"
-            onTriggered: Maui.App.aboutDialog()
+            MenuItem
+            {
+                text: i18n("Preferences")
+                icon.name: "settings-configure"
+                onTriggered: ApplicationWindow.window.openSettingsDialog()
+            }
+
+            MenuItem
+            {
+                text: i18n("About")
+                icon.name: "documentinfo"
+                onTriggered: Maui.App.aboutDialog()
+            }
         }
-    }
     ]
 }

@@ -106,6 +106,12 @@ Maui.ApplicationWindow
         }
     }
 
+    Component
+    {
+        id: _shortcutsDialogComponent
+        ShortcutsDialog { onClosed: destroy() }
+    }
+
     onClosing: (close) =>
                {
                    if(Maui.App.windowsOpened() > 1 && _confirmCloseDialog.prevent)
@@ -145,6 +151,73 @@ Maui.ApplicationWindow
         floatingHeader: appView.viewerVisible
         autoHideHeader: appView.viewerVisible && appView.pixViewer.viewer.imageZooming
         headerMargins: Maui.Style.contentMargins
+
+        Shortcut
+        {
+            sequence: "Ctrl+,"
+            onActivated: openSettingsDialog()
+        }
+
+        Shortcut
+        {
+            sequence: "Ctrl+/"
+            onActivated: openShortcutsDialog()
+        }
+
+        Shortcut
+        {
+            sequence: "Ctrl+Home"
+            onActivated: showGallery()
+        }
+
+        Shortcut
+        {
+            sequence: "Space"
+            enabled: appView.activePixGridItemUrl.length > 0
+            onActivated: getFileInfo(appView.activePixGridItemUrl)
+        }
+
+        Shortcut
+        {
+            sequence: "Ctrl+S"
+            enabled: appView.viewerVisible && appView.pixViewer.currentPicUrl.length > 0
+            onActivated: saveAs([appView.pixViewer.currentPicUrl])
+        }
+
+        Shortcut
+        {
+            sequence: "Ctrl+S"
+            enabled: !appView.viewerVisible && appView.activePixGridItemUrl.length > 0
+            onActivated: appView.selectCurrentGridItem()
+        }
+
+        Shortcut
+        {
+            sequence: "Ctrl+F"
+            enabled: appView.viewerVisible
+            onActivated: root.fullScreen ? root.showNormal() : root.showFullScreen()
+        }
+
+        Shortcut
+        {
+            sequence: "S"
+            enabled: appView.viewerVisible
+            onActivated: appView.pixViewer.slideshowActive = !appView.pixViewer.slideshowActive
+        }
+
+        Shortcut
+        {
+            sequence: "Ctrl+="
+            enabled: !appView.viewerVisible && !appView.editorVisible
+            onActivated: setNextPreviewSize()
+        }
+
+        Shortcut
+        {
+            sequence: "Ctrl+-"
+            enabled: !appView.viewerVisible && !appView.editorVisible
+            onActivated: setPreviousPreviewSize()
+        }
 
         headBar.leftContent: [
             ToolButton
@@ -311,6 +384,13 @@ Maui.ApplicationWindow
 
                 MenuItem
                 {
+                    text: i18n("Shortcuts")
+                    icon.name: "configure-shortcuts"
+                    onTriggered: openShortcutsDialog()
+                }
+
+                MenuItem
+                {
                     text: i18n("Preferences")
                     icon.name: "settings-configure"
                     onTriggered: openSettingsDialog()
@@ -436,6 +516,43 @@ Maui.ApplicationWindow
     }
 
     function setPreviewSize(preset) { browserSettings.previewSizePreset = preset }
+    function setNextPreviewSize()
+    {
+        switch (browserSettings.previewSizePreset)
+        {
+        case "small":
+            setPreviewSize("medium")
+            return
+        case "medium":
+            setPreviewSize("large")
+            return
+        case "large":
+            setPreviewSize("extralarge")
+            return
+        default:
+            setPreviewSize("extralarge")
+            return
+        }
+    }
+
+    function setPreviousPreviewSize()
+    {
+        switch (browserSettings.previewSizePreset)
+        {
+        case "extralarge":
+            setPreviewSize("large")
+            return
+        case "large":
+            setPreviewSize("medium")
+            return
+        case "medium":
+            setPreviewSize("small")
+            return
+        default:
+            setPreviewSize("small")
+            return
+        }
+    }
     function resetToolbarSearch() { _toolbarSearchField.text = "" }
     function handleToolbarBack()
     {
@@ -464,6 +581,11 @@ Maui.ApplicationWindow
     function openEditor(url, stack) { appView.openEditor(url, stack) }
     function openFileDialog() { appView.openFileDialog() }
     function openSettingsDialog() { appView.openSettingsDialog() }
+    function openShortcutsDialog()
+    {
+        var dialog = _shortcutsDialogComponent.createObject(root)
+        dialog.open()
+    }
     function openFolder(url, filters) { appView.openFolder(url, filters) }
     function toggleViewer() { resetToolbarSearch(); appView.toggleViewer() }
     function toogleTagbar() { appView.toogleTagbar() }

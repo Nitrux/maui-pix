@@ -19,6 +19,7 @@ StackView
 
     property bool useInternalChrome: true
     readonly property bool filteringTag: depth > 1
+    readonly property var activeGrid: filteringTag ? currentItem : null
     readonly property Flickable flickable : currentItem ? currentItem.flickable : null
     readonly property Component currentExtraOptions: filteringTag && currentItem ? currentItem.extraOptions : null
     readonly property var currentSlideshowModel: filteringTag && currentItem ? currentItem.list : null
@@ -108,6 +109,13 @@ StackView
                 Maui.ToolButtonMenu
                 {
                     icon.name: "overflow-menu"
+
+                    MenuItem
+                    {
+                        text: i18n("Shortcuts")
+                        icon.name: "configure-shortcuts"
+                        onTriggered: ApplicationWindow.window.openShortcutsDialog()
+                    }
 
                     MenuItem
                     {
@@ -241,6 +249,13 @@ Component
                 Maui.ToolButtonMenu
                 {
                     icon.name: "overflow-menu"
+
+                    MenuItem
+                    {
+                        text: i18n("Shortcuts")
+                        icon.name: "configure-shortcuts"
+                        onTriggered: ApplicationWindow.window.openShortcutsDialog()
+                    }
 
                     MenuItem
                     {

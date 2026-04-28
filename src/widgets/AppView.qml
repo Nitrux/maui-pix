@@ -39,6 +39,15 @@ Item
     readonly property bool browserSearchVisible : galleryVisible || collectionsVisible || tagsFilterActive
     readonly property bool browserSortVisible : tagsGridActive
     readonly property bool shellBackVisible : viewerVisible || collectionsFolderActive || tagsFilterActive
+    readonly property var activePixGrid: galleryVisible
+                                       ? currentRoute
+                                       : (collectionsVisible && currentRoute
+                                          ? currentRoute.activeGrid
+                                          : (tagsVisible && currentRoute ? currentRoute.activeGrid : null))
+    readonly property var activePixGridItem: activePixGrid && activePixGrid.currentIndex > -1 && activePixGrid.model
+                                           ? activePixGrid.model.get(activePixGrid.currentIndex)
+                                           : null
+    readonly property string activePixGridItemUrl: activePixGridItem && activePixGridItem.url ? String(activePixGridItem.url) : ""
     readonly property Component currentExtraOptions: galleryVisible && currentRoute
                                                    ? currentRoute.extraOptions
                                                    : (collectionsVisible && currentRoute
@@ -57,6 +66,12 @@ Item
         text: i18n("Settings")
         icon.name: "settings-configure"
         onTriggered: openSettingsDialog()
+    }
+
+    function selectCurrentGridItem()
+    {
+        if (activePixGridItem)
+            selectItem(activePixGridItem)
     }
 
     Component

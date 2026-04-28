@@ -121,6 +121,7 @@ private:
     void scan(const QList<QUrl> &, const bool & = true, const int & = PIX_QUERY_MAX_LIMIT);
     void scanGpsTags();
     void scheduleThumbnails(const FMH::MODEL_LIST &newItems, int startIndex);
+    void watchSourceDirectories(const QList<QUrl> &urls, bool recursive);
 
     void insert(const FMH::MODEL_LIST &);
 
