@@ -129,23 +129,30 @@ Gallery::Gallery(QObject *parent)
     , m_futureWatcher(nullptr)
     , m_thumbPool(new QThreadPool(this))
     , m_scanTimer(new QTimer(this))
+    , m_thumbApplyTimer(new QTimer(this))
     , m_autoReload(true)
     , m_recursive(true)
 {
-    qDebug() << "CREATING GALLERY LIST";
+    qDebug() << "Gallery::Gallery() this=" << (void*)this << "parent=" << (void*)parent;
     // Limit concurrency so thumbnail generation doesn't spike memory.
     // Two threads: one is usually decoding a source image, the other is saving.
     m_thumbPool->setMaxThreadCount(2);
     m_scanTimer->setSingleShot(true);
     m_scanTimer->setInterval(2000); // 2 s debounce: coalesces rapid filesystem events without feeling sluggish
+    m_thumbApplyTimer->setSingleShot(true);
+    m_thumbApplyTimer->setInterval(0);
+    connect(m_thumbApplyTimer, &QTimer::timeout, this, &Gallery::applyPendingThumbnailUpdates);
 }
 
 Gallery::~Gallery()
 {
+    qDebug() << "Gallery::~Gallery() this=" << (void*)this << "urls=" << m_urls << "items=" << list.size();
     // Increment generation so any running thumbnail tasks see a stale gen and
     // return without touching 'this'. Then drain the queue (clear = remove
     // not-yet-started tasks) and wait for the at-most-2 running tasks to exit.
     ++m_generation;
+    m_thumbApplyTimer->stop();
+    m_pendingThumbnailUpdates.clear();
     m_thumbPool->clear();
     m_thumbPool->waitForDone();
 
@@ -165,7 +172,7 @@ const FMH::MODEL_LIST &Gallery::items() const
 
 void Gallery::setUrls(const QList<QUrl> &urls)
 {
-    qDebug() << "setting urls" << this->m_urls << urls;
+    qDebug() << "Gallery::setUrls() this=" << (void*)this << "old=" << this->m_urls << "new=" << urls;
 
     if(this->m_urls == urls)
         return;
@@ -215,8 +222,10 @@ QStringList Gallery::files() const
 
 void Gallery::scan(const QList<QUrl> &urls, const bool &recursive, const int &limit)
 {
+    qDebug() << "Gallery::scan() this=" << (void*)this << "urls=" << urls << "recursive=" << recursive;
     if(m_urls.isEmpty())
     {
+        qDebug() << "Gallery::scan() this=" << (void*)this << "no URLs — skipping scan";
         this->setStatus(Status::Error, i18n("No sources found to scan."));
         return;
     }
@@ -370,9 +379,12 @@ void Gallery::setCitiesModel()
 
 void Gallery::setStatus(const Gallery::Status &status, const QString &error)
 {
-    qDebug() << "Setting up status" << status;
-    this->m_status = status;
-    Q_EMIT this->statusChanged();
+    qDebug() << "Gallery::setStatus() this=" << (void*)this << "old=" << m_status << "new=" << status << "error=" << error;
+    if (this->m_status != status)
+    {
+        this->m_status = status;
+        Q_EMIT this->statusChanged();
+    }
 
     if(error != m_error)
     {
@@ -433,7 +445,10 @@ void Gallery::append(const QString &url)
 
 void Gallery::clear()
 {
+    qDebug() << "Gallery::clear() this=" << (void*)this << "items=" << list.size();
     m_scanTimer->stop();
+    m_thumbApplyTimer->stop();
+    m_pendingThumbnailUpdates.clear();
 
     // Invalidate all in-flight thumbnail tasks from the previous scan generation.
     // clear() removes queued (not yet started) tasks; the at-most-2 running tasks
@@ -464,12 +479,14 @@ void Gallery::clear()
 
 void Gallery::rescan()
 {
+    qDebug() << "Gallery::rescan() this=" << (void*)this << "urls=" << m_urls;
     this->clear();
     this->load();
 }
 
 void Gallery::load()
 {
+    qDebug() << "Gallery::load() this=" << (void*)this << "urls=" << m_urls;
     this->scan(m_urls, m_recursive, m_limit);
 }
 
@@ -537,6 +554,7 @@ void Gallery::updateGpsTag(const QString &url)
 
 void Gallery::scheduleThumbnails(const FMH::MODEL_LIST &newItems, int startIndex)
 {
+    qDebug() << "Gallery::scheduleThumbnails() this=" << (void*)this << "newItems=" << newItems.size() << "startIndex=" << startIndex;
     const quint64 gen = m_generation.load(std::memory_order_relaxed);
 
     for (int i = 0; i < newItems.size(); ++i)
@@ -544,43 +562,78 @@ void Gallery::scheduleThumbnails(const FMH::MODEL_LIST &newItems, int startIndex
         if (!newItems[i][FMH::MODEL_KEY::THUMBNAIL].isEmpty())
             continue; // Already cached — nothing to do
 
-        const int listIndex = startIndex + i;
         const QString urlStr = newItems[i][FMH::MODEL_KEY::URL];
 
-        m_thumbPool->start([this, urlStr, listIndex, gen]()
+        m_thumbPool->start([this, urlStr, gen]()
         {
-            if (m_generation.load(std::memory_order_relaxed) != gen)
-                return;
-
             const QString thumb = ensureXdgThumbnail(QUrl(urlStr));
-
-            if (thumb.isEmpty() || m_generation.load(std::memory_order_relaxed) != gen)
+            if (thumb.isEmpty())
                 return;
 
-            // Post the model update back to the main thread.
-            // Qt automatically removes all posted events for a QObject when it is
-            // destroyed, so this is safe even if Gallery is deleted first.
-            QMetaObject::invokeMethod(this, [this, urlStr, listIndex, thumb, gen]()
+            // Funnel thumbnail completions through a single main-thread batching
+            // point. This avoids mutating the live model with stale row indexes
+            // while the view and proxy models are still settling.
+            QMetaObject::invokeMethod(this, [this, urlStr, thumb, gen]()
             {
-                if (m_generation.load(std::memory_order_relaxed) != gen)
-                    return;
-                if (listIndex < 0 || listIndex >= list.size())
-                    return;
-                // Verify the item at listIndex is still the one we generated for
-                if (list[listIndex][FMH::MODEL_KEY::URL] != urlStr)
-                    return;
-
-                list[listIndex][FMH::MODEL_KEY::THUMBNAIL] = thumb;
-                this->updateModel(listIndex, {FMH::MODEL_KEY::THUMBNAIL});
+                queueThumbnailResult(urlStr, thumb, gen);
             }, Qt::QueuedConnection);
         });
     }
 }
 
+void Gallery::queueThumbnailResult(const QString &url, const QString &thumb, quint64 gen)
+{
+    if (url.isEmpty() || thumb.isEmpty())
+        return;
+
+    if (m_generation.load(std::memory_order_relaxed) != gen)
+        return;
+
+    m_pendingThumbnailUpdates.insert(url, thumb);
+
+    if (!m_thumbApplyTimer->isActive())
+        m_thumbApplyTimer->start();
+}
+
+void Gallery::applyPendingThumbnailUpdates()
+{
+    if (m_pendingThumbnailUpdates.isEmpty())
+        return;
+
+    const auto pendingUpdates = m_pendingThumbnailUpdates;
+    m_pendingThumbnailUpdates.clear();
+
+    QVector<int> changedRows;
+    changedRows.reserve(pendingUpdates.size());
+
+    for (int i = 0; i < list.size(); ++i)
+    {
+        const auto urlIt = list[i].constFind(FMH::MODEL_KEY::URL);
+        if (urlIt == list[i].constEnd())
+            continue;
+
+        const auto thumbIt = pendingUpdates.constFind(urlIt.value());
+        if (thumbIt == pendingUpdates.constEnd())
+            continue;
+
+        if (list[i][FMH::MODEL_KEY::THUMBNAIL] == thumbIt.value())
+            continue;
+
+        list[i][FMH::MODEL_KEY::THUMBNAIL] = thumbIt.value();
+        changedRows.append(i);
+    }
+
+    for (const int row : changedRows)
+        Q_EMIT this->updateModel(row, {FMH::MODEL_KEY::THUMBNAIL});
+}
+
 void Gallery::componentComplete()
 {
+    qDebug() << "Gallery::componentComplete() this=" << (void*)this << "urls=" << m_urls << "willLoad=" << !m_urls.isEmpty();
+
     connect(m_fileLoader, &FMH::FileLoader::finished, [this](FMH::MODEL_LIST items) {
         Q_UNUSED(items)
+        qDebug() << "Gallery: fileLoader finished this=" << (void*)this << "total items=" << list.size();
 
         Q_EMIT this->filesChanged();
         Q_EMIT this->foldersChanged();
@@ -594,7 +647,7 @@ void Gallery::componentComplete()
     });
 
     connect(m_fileLoader, &FMH::FileLoader::itemsReady, [this](FMH::MODEL_LIST items) {
-        qDebug() << "Items ready" << items.size();
+        qDebug() << "Gallery: itemsReady this=" << (void*)this << "batch=" << items.size() << "listSizeBefore=" << list.size();
 
         if (items.isEmpty())
             return;
@@ -636,7 +689,8 @@ void Gallery::componentComplete()
     m_fileLoader->setBatchCount(500);
     m_fileLoader->informer = &picInfo;
 
-    this->load();
+    if (!m_urls.isEmpty())
+        this->load();
 }
 
 const QStringList &Gallery::cities() const

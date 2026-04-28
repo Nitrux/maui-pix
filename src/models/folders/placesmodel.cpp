@@ -1,5 +1,6 @@
 #include "placesmodel.h"
 
+#include <QDebug>
 #include <KLocalizedString>
 #include <MauiKit4/FileBrowsing/fmstatic.h>
 #include <MauiKit4/FileBrowsing/tagging.h>
@@ -125,6 +126,7 @@ void PlacesModel::classBegin()
 
 void PlacesModel::componentComplete()
 {
+    qDebug() << "PlacesModel::componentComplete() this=" << (void*)this;
     m_tagging = Tagging::getInstance();
     connect(m_tagging, &Tagging::tagged, [this](QVariantMap item) {
         Q_EMIT this->preItemAppended();

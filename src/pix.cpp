@@ -71,22 +71,24 @@ QUrl Pix::screenshotsPath()
 
 Gallery *Pix::allImagesModel()
 {
-    qDebug() << "REQUEST ALL IMAGES MODEL";
+    qDebug() << "Pix::allImagesModel() existing=" << (void*)m_allImagesModel;
     if(!m_allImagesModel)
     {
-        qDebug() << "REQUEST ALL IMAGES MODEL &CREATING";
+        qDebug() << "Pix::allImagesModel() creating new Gallery";
 
         m_allImagesModel = new Gallery(this);
+        qDebug() << "Pix::allImagesModel() created Gallery this=" << (void*)m_allImagesModel;
         m_allImagesModel->setUrls(QUrl::fromStringList(sources()));
         m_allImagesModel->setRecursive(true);
         m_allImagesModel->componentComplete(); //call this to actually get the data
         connect(this, &Pix::sourcesChanged, [this]()
                 {
+                    qDebug() << "Pix::sourcesChanged -> updating allImagesModel urls";
                     m_allImagesModel->setUrls(QUrl::fromStringList(sources()));
                 });
     }
 
-    qDebug() << "REQUEST ALL IMAGES MODEL & EXISTING ONE";
+    qDebug() << "Pix::allImagesModel() returning=" << (void*)m_allImagesModel;
 
     return m_allImagesModel;
 }

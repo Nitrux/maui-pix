@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QObject>
+#include <QHash>
 #include <QStringList>
 #include <QFutureWatcher>
 #include <QUrl>
@@ -101,7 +102,9 @@ private:
     QThreadPool *m_thumbPool;
 
     QTimer *m_scanTimer;
+    QTimer *m_thumbApplyTimer;
     FMH::MODEL_LIST list = {};
+    QHash<QString, QString> m_pendingThumbnailUpdates;
 
     std::atomic<quint64> m_generation{0};
 
@@ -121,6 +124,8 @@ private:
     void scan(const QList<QUrl> &, const bool & = true, const int & = PIX_QUERY_MAX_LIMIT);
     void scanGpsTags();
     void scheduleThumbnails(const FMH::MODEL_LIST &newItems, int startIndex);
+    void queueThumbnailResult(const QString &url, const QString &thumb, quint64 gen);
+    void applyPendingThumbnailUpdates();
     void watchSourceDirectories(const QList<QUrl> &urls, bool recursive);
 
     void insert(const FMH::MODEL_LIST &);

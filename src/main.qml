@@ -159,6 +159,227 @@ Maui.ApplicationWindow
         }
     }
 
+    Component
+    {
+        id: _commonOverflowMenuComponent
+
+        Maui.ToolButtonMenu
+        {
+            icon.name: "overflow-menu"
+
+            MenuItem
+            {
+                text: i18n("Shortcuts")
+                icon.name: "configure-shortcuts"
+                onTriggered: openShortcutsDialog()
+            }
+
+            MenuItem
+            {
+                text: i18n("Preferences")
+                icon.name: "settings-configure"
+                onTriggered: openSettingsDialog()
+            }
+
+            MenuItem
+            {
+                text: i18n("About")
+                icon.name: "documentinfo"
+                onTriggered: Maui.App.aboutDialog()
+            }
+        }
+    }
+
+    Component
+    {
+        id: _browserSortOverflowMenuComponent
+
+        Maui.ToolButtonMenu
+        {
+            icon.name: "overflow-menu"
+
+            Menu
+            {
+                title: i18n("Sort")
+                icon.name: "view-sort"
+                Maui.Controls.component: Component
+                {
+                    Item
+                    {
+                        implicitWidth: 0
+                        implicitHeight: 0
+                        visible: false
+                    }
+                }
+
+                MenuItem
+                {
+                    text: i18n("Title")
+                    checked: browserSettings.sortBy === "title"
+                    checkable: true
+                    autoExclusive: true
+                    onTriggered: browserSettings.sortBy = "title"
+                }
+
+                MenuItem
+                {
+                    text: i18n("Modified")
+                    checked: browserSettings.sortBy === "modified"
+                    checkable: true
+                    autoExclusive: true
+                    onTriggered: browserSettings.sortBy = "modified"
+                }
+
+                MenuItem
+                {
+                    text: i18n("Size")
+                    checked: browserSettings.sortBy === "size"
+                    checkable: true
+                    autoExclusive: true
+                    onTriggered: browserSettings.sortBy = "size"
+                }
+
+                MenuItem
+                {
+                    text: i18n("Date")
+                    checked: browserSettings.sortBy === "date"
+                    checkable: true
+                    autoExclusive: true
+                    onTriggered: browserSettings.sortBy = "date"
+                }
+
+                MenuSeparator {}
+
+                MenuItem
+                {
+                    text: i18n("Ascending")
+                    icon.name: "view-sort-ascending"
+                    checked: browserSettings.sortOrder === Qt.AscendingOrder
+                    checkable: true
+                    autoExclusive: true
+                    onTriggered: browserSettings.sortOrder = Qt.AscendingOrder
+                }
+
+                MenuItem
+                {
+                    text: i18n("Descending")
+                    icon.name: "view-sort-descending"
+                    checked: browserSettings.sortOrder === Qt.DescendingOrder
+                    checkable: true
+                    autoExclusive: true
+                    onTriggered: browserSettings.sortOrder = Qt.DescendingOrder
+                }
+            }
+
+            MenuSeparator {}
+
+            MenuItem
+            {
+                text: i18n("Shortcuts")
+                icon.name: "configure-shortcuts"
+                onTriggered: openShortcutsDialog()
+            }
+
+            MenuItem
+            {
+                text: i18n("Preferences")
+                icon.name: "settings-configure"
+                onTriggered: openSettingsDialog()
+            }
+
+            MenuItem
+            {
+                text: i18n("About")
+                icon.name: "documentinfo"
+                onTriggered: Maui.App.aboutDialog()
+            }
+        }
+    }
+
+    Component
+    {
+        id: _tagsSortOverflowMenuComponent
+
+        Maui.ToolButtonMenu
+        {
+            icon.name: "overflow-menu"
+
+            Menu
+            {
+                title: i18n("Sort")
+                icon.name: "view-sort"
+                Maui.Controls.component: Component
+                {
+                    Item
+                    {
+                        implicitWidth: 0
+                        implicitHeight: 0
+                        visible: false
+                    }
+                }
+
+                MenuItem
+                {
+                    text: i18n("Name (A-Z)")
+                    checked: currentBrowserSortIndex() === 0
+                    checkable: true
+                    autoExclusive: true
+                    onTriggered: applyBrowserSort(0)
+                }
+
+                MenuItem
+                {
+                    text: i18n("Name (Z-A)")
+                    checked: currentBrowserSortIndex() === 1
+                    checkable: true
+                    autoExclusive: true
+                    onTriggered: applyBrowserSort(1)
+                }
+
+                MenuItem
+                {
+                    text: i18n("Date (newest)")
+                    checked: currentBrowserSortIndex() === 2
+                    checkable: true
+                    autoExclusive: true
+                    onTriggered: applyBrowserSort(2)
+                }
+
+                MenuItem
+                {
+                    text: i18n("Date (oldest)")
+                    checked: currentBrowserSortIndex() === 3
+                    checkable: true
+                    autoExclusive: true
+                    onTriggered: applyBrowserSort(3)
+                }
+            }
+
+            MenuSeparator {}
+
+            MenuItem
+            {
+                text: i18n("Shortcuts")
+                icon.name: "configure-shortcuts"
+                onTriggered: openShortcutsDialog()
+            }
+
+            MenuItem
+            {
+                text: i18n("Preferences")
+                icon.name: "settings-configure"
+                onTriggered: openSettingsDialog()
+            }
+
+            MenuItem
+            {
+                text: i18n("About")
+                icon.name: "documentinfo"
+                onTriggered: Maui.App.aboutDialog()
+            }
+        }
+    }
+
     onClosing: (close) =>
                {
                    if(Maui.App.windowsOpened() > 1 && _confirmCloseDialog.prevent)
@@ -377,147 +598,14 @@ Maui.ApplicationWindow
                 topPadding: 10
             },
 
-            Maui.ToolButtonMenu
+            Loader
             {
-                icon.name: "overflow-menu"
-
-                MenuItem
-                {
-                    visible: appView.browserSortVisible
-                    text: i18n("Sort")
-                    icon.name: "view-sort"
-
-                    Menu
-                    {
-                        MenuItem
-                        {
-                            visible: appView.tagsGridActive
-                            text: i18n("Name (A-Z)")
-                            checked: currentBrowserSortIndex() === 0
-                            checkable: true
-                            autoExclusive: true
-                            onTriggered: applyBrowserSort(0)
-                        }
-
-                        MenuItem
-                        {
-                            visible: appView.tagsGridActive
-                            text: i18n("Name (Z-A)")
-                            checked: currentBrowserSortIndex() === 1
-                            checkable: true
-                            autoExclusive: true
-                            onTriggered: applyBrowserSort(1)
-                        }
-
-                        MenuItem
-                        {
-                            visible: appView.tagsGridActive
-                            text: i18n("Date (newest)")
-                            checked: currentBrowserSortIndex() === 2
-                            checkable: true
-                            autoExclusive: true
-                            onTriggered: applyBrowserSort(2)
-                        }
-
-                        MenuItem
-                        {
-                            visible: appView.tagsGridActive
-                            text: i18n("Date (oldest)")
-                            checked: currentBrowserSortIndex() === 3
-                            checkable: true
-                            autoExclusive: true
-                            onTriggered: applyBrowserSort(3)
-                        }
-
-                        MenuItem
-                        {
-                            visible: !appView.tagsGridActive
-                            text: i18n("Title")
-                            checked: browserSettings.sortBy === "title"
-                            checkable: true
-                            autoExclusive: true
-                            onTriggered: browserSettings.sortBy = "title"
-                        }
-
-                        MenuItem
-                        {
-                            visible: !appView.tagsGridActive
-                            text: i18n("Modified")
-                            checked: browserSettings.sortBy === "modified"
-                            checkable: true
-                            autoExclusive: true
-                            onTriggered: browserSettings.sortBy = "modified"
-                        }
-
-                        MenuItem
-                        {
-                            visible: !appView.tagsGridActive
-                            text: i18n("Size")
-                            checked: browserSettings.sortBy === "size"
-                            checkable: true
-                            autoExclusive: true
-                            onTriggered: browserSettings.sortBy = "size"
-                        }
-
-                        MenuItem
-                        {
-                            visible: !appView.tagsGridActive
-                            text: i18n("Date")
-                            checked: browserSettings.sortBy === "date"
-                            checkable: true
-                            autoExclusive: true
-                            onTriggered: browserSettings.sortBy = "date"
-                        }
-
-                        MenuSeparator
-                        {
-                            visible: !appView.tagsGridActive
-                        }
-
-                        MenuItem
-                        {
-                            visible: !appView.tagsGridActive
-                            text: i18n("Ascending")
-                            icon.name: "view-sort-ascending"
-                            checked: browserSettings.sortOrder === Qt.AscendingOrder
-                            checkable: true
-                            autoExclusive: true
-                            onTriggered: browserSettings.sortOrder = Qt.AscendingOrder
-                        }
-
-                        MenuItem
-                        {
-                            visible: !appView.tagsGridActive
-                            text: i18n("Descending")
-                            icon.name: "view-sort-descending"
-                            checked: browserSettings.sortOrder === Qt.DescendingOrder
-                            checkable: true
-                            autoExclusive: true
-                            onTriggered: browserSettings.sortOrder = Qt.DescendingOrder
-                        }
-                    }
-                }
-
-                MenuItem
-                {
-                    text: i18n("Shortcuts")
-                    icon.name: "configure-shortcuts"
-                    onTriggered: openShortcutsDialog()
-                }
-
-                MenuItem
-                {
-                    text: i18n("Preferences")
-                    icon.name: "settings-configure"
-                    onTriggered: openSettingsDialog()
-                }
-
-                MenuItem
-                {
-                    text: i18n("About")
-                    icon.name: "documentinfo"
-                    onTriggered: Maui.App.aboutDialog()
-                }
+                active: true
+                sourceComponent: appView.browserSortVisible
+                                 ? (appView.tagsGridActive
+                                    ? _tagsSortOverflowMenuComponent
+                                    : _browserSortOverflowMenuComponent)
+                                 : _commonOverflowMenuComponent
             }
         ]
 
