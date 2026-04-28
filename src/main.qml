@@ -52,6 +52,7 @@ Maui.ApplicationWindow
                                              medium: 90,
                                              large: 120,
                                              extralarge: 160})
+    readonly property int minimumDeterministicPreviewSize: 48
     readonly property string browserSearchPlaceholder: appView.collectionsVisible
                                                        ? (appView.collectionsFolderActive ? i18n("Search pictures") : i18n("Search collections"))
                                                        : i18n("Search pictures")
@@ -63,7 +64,7 @@ Maui.ApplicationWindow
         property bool showLabels : false
         property bool fitPreviews : false
         property bool autoReload: true
-        property int previewSize : previewSizes.medium
+        property string previewSizePreset : "medium"
         property string sortBy : "modified"
         property int sortOrder: Qt.DescendingOrder
         property bool gpsTags : false
@@ -423,7 +424,18 @@ Maui.ApplicationWindow
         }
     }
 
-    function setPreviewSize(size) { browserSettings.previewSize = size }
+    function previewSizeForPreset(preset)
+    {
+        return previewSizes[preset] ?? previewSizes.medium
+    }
+
+    function effectivePreviewSize(preset)
+    {
+        const dpr = Screen.devicePixelRatio > 0 ? Screen.devicePixelRatio : 1
+        return Math.max(minimumDeterministicPreviewSize, Math.round(previewSizeForPreset(preset) / dpr))
+    }
+
+    function setPreviewSize(preset) { browserSettings.previewSizePreset = preset }
     function resetToolbarSearch() { _toolbarSearchField.text = "" }
     function handleToolbarBack()
     {

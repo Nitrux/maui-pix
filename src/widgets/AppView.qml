@@ -337,10 +337,10 @@ Item
         id: _openWithDialog
     }
 
-    function setPreviewSize(size)
+    function setPreviewSize(preset)
     {
-        console.log(size)
-        browserSettings.previewSize = size
+        console.log(preset)
+        browserSettings.previewSizePreset = preset
     }
 
     function getFileInfo(url)

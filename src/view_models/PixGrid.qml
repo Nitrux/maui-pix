@@ -20,7 +20,7 @@ Maui.Page
     Keys.forwardTo: _gridView
     Keys.enabled: true
 
-    property int itemSize : browserSettings.previewSize
+    property int itemSize : effectivePreviewSize(browserSettings.previewSizePreset)
 
     readonly property alias listModel : pixModel
     readonly property alias menu : _picMenu
@@ -109,31 +109,31 @@ Maui.Page
                 Action
                 {
                     text: i18n("S")
-                    onTriggered: setPreviewSize(previewSizes.small)
-                    checked: previewSizes.small === browserSettings.previewSize
+                    onTriggered: setPreviewSize("small")
+                    checked: browserSettings.previewSizePreset === "small"
                 }
 
                 Action
                 {
                     text: i18n("M")
-                    onTriggered: setPreviewSize(previewSizes.medium)
-                    checked: previewSizes.medium === browserSettings.previewSize
+                    onTriggered: setPreviewSize("medium")
+                    checked: browserSettings.previewSizePreset === "medium"
 
                 }
 
                 Action
                 {
                     text: i18n("X")
-                    onTriggered: setPreviewSize(previewSizes.large)
-                    checked: previewSizes.large === browserSettings.previewSize
+                    onTriggered: setPreviewSize("large")
+                    checked: browserSettings.previewSizePreset === "large"
 
                 }
 
                 Action
                 {
                     text: i18n("XL")
-                    onTriggered: setPreviewSize(previewSizes.extralarge)
-                    checked: previewSizes.extralarge === browserSettings.previewSize
+                    onTriggered: setPreviewSize("extralarge")
+                    checked: browserSettings.previewSizePreset === "extralarge"
 
                 }
             }
@@ -208,6 +208,8 @@ Maui.Page
         enableLassoSelection: true
         holder.visible: _gridView.count === 0
 
+        adaptContent: false
+        wheelResizeEnabled: false
         itemSize : control.itemSize
         itemHeight: browserSettings.showLabels ? _gridView.itemSize * 1.5 : _gridView.itemSize
         cacheBuffer: control.height
