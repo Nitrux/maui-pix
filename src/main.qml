@@ -522,13 +522,6 @@ Maui.ApplicationWindow
                 onClicked: showTags()
             },
 
-            ToolSeparator
-            {
-                visible: !root.verticallyBiasedLayout && (appView.browserSearchVisible || appView.browserSortVisible || appView.viewerVisible)
-                bottomPadding: 10
-                topPadding: 10
-            },
-
             ToolButton
             {
                 visible: appView.viewerVisible && !root.verticallyBiasedLayout
