@@ -36,7 +36,7 @@ Item
     readonly property bool collectionsFolderActive : collectionsVisible && currentRoute && currentRoute.browsingFolder
     readonly property bool tagsFilterActive : tagsVisible && currentRoute && currentRoute.filteringTag
     readonly property bool tagsGridActive : tagsVisible && currentRoute && !currentRoute.filteringTag
-    readonly property bool browserSearchVisible : galleryVisible || (collectionsVisible && !collectionsFolderActive) || tagsGridActive
+    readonly property bool browserSearchVisible : galleryVisible || collectionsFolderActive || tagsGridActive
     readonly property bool browserSortVisible : galleryVisible || collectionsFolderActive || tagsVisible
     readonly property bool shellBackVisible : viewerVisible || collectionsFolderActive || tagsFilterActive
     readonly property var activePixGrid: galleryVisible

@@ -574,14 +574,6 @@ Maui.ApplicationWindow
                 onClicked: removeFiles([appView.pixViewer.currentPicUrl])
             },
 
-            Loader
-            {
-                id: _topSearchFieldLoader
-                active: appView.browserSearchVisible && root.browserSearchExpanded
-                visible: active
-                sourceComponent: _browserSearchFieldComponent
-            },
-
             ToolButton
             {
                 visible: appView.browserSearchVisible
@@ -656,10 +648,48 @@ Maui.ApplicationWindow
             }
         ]
 
+        Item
+        {
+            id: _browserSearchBar
+            visible: appView.browserSearchVisible && root.browserSearchExpanded
+            anchors.top: parent.top
+            anchors.left: parent.left
+            anchors.right: parent.right
+            height: visible ? (_browserSearchBarLayout.implicitHeight + (Maui.Style.contentMargins * 2)) : 0
+
+            Rectangle
+            {
+                anchors.fill: parent
+                color: Maui.Theme.backgroundColor
+                border.color: Maui.Theme.alternateBackgroundColor
+                radius: Maui.Style.radiusV
+            }
+
+            Item
+            {
+                id: _browserSearchBarLayout
+                anchors.fill: parent
+                anchors.margins: Maui.Style.contentMargins
+                implicitHeight: _topSearchFieldLoader.implicitHeight
+
+                Loader
+                {
+                    id: _topSearchFieldLoader
+                    anchors.centerIn: parent
+                    active: _browserSearchBar.visible
+                    visible: active
+                    sourceComponent: _browserSearchFieldComponent
+                }
+            }
+        }
+
         AppView
         {
             id: appView
-            anchors.fill: parent
+            anchors.top: _browserSearchBar.visible ? _browserSearchBar.bottom : parent.top
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.bottom: parent.bottom
         }
     }
 

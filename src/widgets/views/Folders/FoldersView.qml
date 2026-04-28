@@ -193,7 +193,7 @@ Component
 
         holder.emoji: "folder-pictures"
         holder.title : i18n("Folder is empty!")
-        holder.body: i18n("There're no images in this folder. %1", list.urls)
+        holder.body: i18n("There're no images in this folder. %1", currentFolder)
 
         list.onStatusChanged: {
             if(list.status === GalleryList.Ready) {
@@ -325,7 +325,7 @@ function search(text)
         else
             folderModel.filter = text
     }
-    else if(currentItem)
+    else if(currentItem && typeof currentItem.search === "function")
         currentItem.search(text)
 }
 
@@ -333,7 +333,7 @@ function clearSearch()
 {
     if(control.depth <= 1)
         folderModel.clearFilters()
-    else if(currentItem)
+    else if(currentItem && typeof currentItem.clearSearch === "function")
         currentItem.clearSearch()
 }
 }

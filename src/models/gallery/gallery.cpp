@@ -5,6 +5,8 @@
 #include <QDebug>
 #include <QDir>
 #include <QDirIterator>
+#include <QCoreApplication>
+#include <QPointer>
 #include <QTimer>
 #include <QThreadPool>
 #include <QtConcurrent/QtConcurrent>
@@ -147,14 +149,18 @@ Gallery::Gallery(QObject *parent)
 Gallery::~Gallery()
 {
     qDebug() << "Gallery::~Gallery() this=" << (void*)this << "urls=" << m_urls << "items=" << list.size();
-    // Increment generation so any running thumbnail tasks see a stale gen and
-    // return without touching 'this'. Then drain the queue (clear = remove
-    // not-yet-started tasks) and wait for the at-most-2 running tasks to exit.
+    // Invalidate pending work and detach the pool so queued/deleting objects do
+    // not try to synchronously wait from a pool worker thread during teardown.
     ++m_generation;
     m_thumbApplyTimer->stop();
     m_pendingThumbnailUpdates.clear();
-    m_thumbPool->clear();
-    m_thumbPool->waitForDone();
+    if (m_thumbPool)
+    {
+        m_thumbPool->clear();
+        m_thumbPool->setParent(nullptr);
+        m_thumbPool->deleteLater();
+        m_thumbPool = nullptr;
+    }
 
     if(m_futureWatcher)
     {
@@ -564,18 +570,24 @@ void Gallery::scheduleThumbnails(const FMH::MODEL_LIST &newItems, int startIndex
 
         const QString urlStr = newItems[i][FMH::MODEL_KEY::URL];
 
-        m_thumbPool->start([this, urlStr, gen]()
+        QPointer<Gallery> self(this);
+        m_thumbPool->start([self, urlStr, gen]()
         {
             const QString thumb = ensureXdgThumbnail(QUrl(urlStr));
             if (thumb.isEmpty())
                 return;
 
+            auto *app = QCoreApplication::instance();
+            if (!app)
+                return;
+
             // Funnel thumbnail completions through a single main-thread batching
             // point. This avoids mutating the live model with stale row indexes
             // while the view and proxy models are still settling.
-            QMetaObject::invokeMethod(this, [this, urlStr, thumb, gen]()
+            QMetaObject::invokeMethod(app, [self, urlStr, thumb, gen]()
             {
-                queueThumbnailResult(urlStr, thumb, gen);
+                if (self)
+                    self->queueThumbnailResult(urlStr, thumb, gen);
             }, Qt::QueuedConnection);
         });
     }
