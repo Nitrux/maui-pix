@@ -16,6 +16,7 @@ import "../../../view_models"
 PixGrid
 {
     id: control
+    objectName: "GalleryView"
     list: Pix.Collection.allImagesModel
     background: null
     property bool useInternalChrome: true

@@ -24,6 +24,18 @@ StackView
     readonly property Component currentExtraOptions: filteringTag && currentItem ? currentItem.extraOptions : null
     readonly property var currentSlideshowModel: filteringTag && currentItem ? currentItem.list : null
 
+    function search(text)
+    {
+        if (currentItem && currentItem.search)
+            currentItem.search(text)
+    }
+
+    function clearSearch()
+    {
+        if (currentItem && currentItem.clearSearch)
+            currentItem.clearSearch()
+    }
+
     initialItem: _frontPageComponent
 
     Component
@@ -158,7 +170,7 @@ Component
 
             function currentSortIndex()
             {
-                const sorts = _sortComboBox._sorts
+                const sorts = _sortOptions
 
                 for (let i = 0; i < sorts.length; ++i) {
                     const option = sorts[i]
@@ -172,7 +184,7 @@ Component
 
             function applySort(index)
             {
-                const sorts = _sortComboBox._sorts
+                const sorts = _sortOptions
 
                 if (index < 0 || index >= sorts.length)
                     return
@@ -180,6 +192,26 @@ Component
                 _tagsModel.sort = sorts[index].sort
                 _tagsModel.sortOrder = sorts[index].order
             }
+
+            function search(text)
+            {
+                if (text.includes(","))
+                    _tagsModel.filters = text.split(",")
+                else
+                    _tagsModel.filter = text
+            }
+
+            function clearSearch()
+            {
+                _tagsModel.clearFilters()
+            }
+
+            readonly property var _sortOptions: [
+                { sort: "tag",     order: Qt.AscendingOrder  },
+                { sort: "tag",     order: Qt.DescendingOrder },
+                { sort: "adddate", order: Qt.DescendingOrder },
+                { sort: "adddate", order: Qt.AscendingOrder  }
+            ]
 
             headBar.leftContent: [
                 ToolButton
@@ -203,40 +235,6 @@ Component
                 ToolSeparator {
                     bottomPadding: 10
                     topPadding: 10
-                },
-
-                Label
-                {
-                    text: i18n("Sort")
-                    font.weight: Font.DemiBold
-                    verticalAlignment: Text.AlignVCenter
-                },
-
-                ComboBox
-                {
-                    id: _sortComboBox
-                    implicitWidth: 180
-                    currentIndex: 0
-
-                    model: [
-                        i18n("Name (A-Z)"),
-                        i18n("Name (Z-A)"),
-                        i18n("Date (newest)"),
-                        i18n("Date (oldest)")
-                    ]
-
-                    readonly property var _sorts: [
-                        { sort: "tag",     order: Qt.AscendingOrder  },
-                        { sort: "tag",     order: Qt.DescendingOrder },
-                        { sort: "adddate", order: Qt.DescendingOrder },
-                        { sort: "adddate", order: Qt.AscendingOrder  }
-                    ]
-
-                    onActivated: (index) =>
-                    {
-                        _tagsModel.sort = _sorts[index].sort
-                        _tagsModel.sortOrder = _sorts[index].order
-                    }
                 }
             ]
 
@@ -283,6 +281,7 @@ Component
                     recursiveFilteringEnabled: true
                     sortCaseSensitivity: Qt.CaseInsensitive
                     filterCaseSensitivity: Qt.CaseInsensitive
+                    filterRole: "tag"
                     sort: "tag"
                     sortOrder: Qt.AscendingOrder
 
@@ -361,18 +360,6 @@ Component
     function populateGrid(myTag)
     {
         control.push(tagsGrid, {'currentTag': myTag})
-    }
-
-    function search(text)
-    {
-        if (filteringTag && currentItem && currentItem.search)
-            currentItem.search(text)
-    }
-
-    function clearSearch()
-    {
-        if (filteringTag && currentItem && currentItem.clearSearch)
-            currentItem.clearSearch()
     }
 
     function goBack()
