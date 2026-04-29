@@ -689,7 +689,8 @@ Maui.ApplicationWindow
     SelectionBar
     {
         id: _selectionBar
-        visible: !appView.viewerVisible
+        enabled: !appView.viewerVisible
+        opacity: appView.viewerVisible ? 0 : 1
         anchors.bottom: parent.bottom
         anchors.bottomMargin: _shellPage.footBar.visible ? _shellPage.footer.height + Maui.Style.space.medium : 0
         anchors.horizontalCenter: parent.horizontalCenter
