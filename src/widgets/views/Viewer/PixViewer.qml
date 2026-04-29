@@ -176,7 +176,7 @@ Maui.Page
 
         ToolButton
         {
-            icon.name: "draw-freehand"
+            icon.name: "edit-add-effect"
             onClicked:
             {
                 if (control.currentPicUrl.length > 0)

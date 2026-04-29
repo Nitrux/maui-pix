@@ -550,7 +550,7 @@ Maui.ApplicationWindow
             ToolButton
             {
                 visible: appView.viewerVisible && !root.verticallyBiasedLayout
-                icon.name: "draw-freehand"
+                icon.name: "edit-add-effect"
                 onClicked: appView.openEditor(appView.pixViewer.currentPicUrl, appView.stackView)
             },
 
@@ -629,7 +629,7 @@ Maui.ApplicationWindow
 
                 ToolButton
                 {
-                    icon.name: "draw-freehand"
+                    icon.name: "edit-add-effect"
                     onClicked: appView.openEditor(appView.pixViewer.currentPicUrl, appView.stackView)
                 }
 
