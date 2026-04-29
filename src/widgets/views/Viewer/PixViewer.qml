@@ -54,6 +54,7 @@ Maui.Page
     readonly property alias holder : holder
 
     readonly property alias model : viewer.model
+    property Maui.BaseModel sourceModel: null
 
     property bool currentPicFav: false
     property var currentPic : ({url: "", title: ""})
@@ -100,6 +101,17 @@ Maui.Page
             else
                 control.next()
             _transitionOverlay.opacity = 0
+        }
+    }
+
+    Connections
+    {
+        target: control.sourceModel
+        ignoreUnknownSignals: true
+
+        function onCountChanged()
+        {
+            control.syncFromSourceModel()
         }
     }
 
@@ -511,8 +523,8 @@ Maui.Page
                 anchors.fill: parent
                 visible: false
                 textureSize: Qt.size(_previewBar.width, _previewBar.height)
-                sourceItem: control
-                sourceRect: Qt.rect(_previewBar.x, _previewBar.y, _previewBar.width, _previewBar.height)
+                sourceItem: viewer
+                sourceRect: _previewBar.mapToItem(viewer, Qt.rect(0, 0, _previewBar.width, _previewBar.height))
             }
 
             Loader
@@ -649,6 +661,40 @@ Maui.Page
 
         const preservedIndex = remainingUrls.indexOf(currentUrl)
         view(preservedIndex >= 0 ? preservedIndex : Math.min(currentIndex, remainingUrls.length - 1))
+    }
+
+    function syncFromSourceModel(preferredIndex = -1)
+    {
+        if (!control.sourceModel)
+            return
+
+        const sourceUrls = control.sourceModel.getAll()
+                                            .map((item) => item.url ? String(item.url) : "")
+                                            .filter((url) => url.length > 0)
+
+        const currentUrl = control.currentPicUrl
+        const fallbackIndex = preferredIndex >= 0 ? preferredIndex : control.currentPicIndex
+
+        viewer.clear()
+        viewer.appendPics(sourceUrls)
+
+        if (sourceUrls.length === 0)
+        {
+            control.slideshowActive = false
+            control.currentPicIndex = 0
+            control.currentPic = ({url: "", title: ""})
+            control.closeRequested()
+            return
+        }
+
+        if (preferredIndex >= 0)
+        {
+            view(Math.min(preferredIndex, sourceUrls.length - 1))
+            return
+        }
+
+        const preservedIndex = currentUrl.length > 0 ? sourceUrls.indexOf(currentUrl) : -1
+        view(preservedIndex >= 0 ? preservedIndex : Math.min(fallbackIndex, sourceUrls.length - 1))
     }
 
 }

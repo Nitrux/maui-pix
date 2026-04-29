@@ -500,6 +500,7 @@ Item
         const lastIndex = Math.max(count - 1, 0)
         const requestedIndex = typeof index === "number" ? index : 0
         const targetIndex = Math.min(Math.max(requestedIndex, 0), lastIndex)
+        pixViewer.sourceModel = null
         pixViewer.viewer.clear()
         pixViewer.viewer.appendPics(pics)
         pixViewer.view(targetIndex)
@@ -512,8 +513,12 @@ Item
     function open(model, index, recursive = false)
     {
         const targetIndex = model.mappedFromSource(index)
-        const pics = model.getAll().map((item) => item.url).filter((url) => url && String(url).length > 0)
-        openExternalPics(pics, targetIndex)
+        pixViewer.sourceModel = model
+        pixViewer.syncFromSourceModel(targetIndex)
+        if(!pixViewer.active)
+        {
+            toggleViewer()
+        }
     }
 
     function openTagsDialog(urls)
