@@ -9,7 +9,7 @@ import org.mauikit.filebrowsing as FB
 
 Item
 {
-    opacity: 0.5
+    opacity: 1
     Keys.enabled: true
     Keys.onPressed: (event) =>
                     {
@@ -28,9 +28,75 @@ Item
 
     function selectAll()
     {
-        _boxes.selectedIndexes = _ocr.allWordBoxes()
+        console.log("OCR selectAll", "blockType", viewerSettings.ocrBlockType, "count", currentBoxes().length)
+        _boxes.selectedIndexes = allCurrentBoxIndexes()
         setSelectedIndexes()
         _boxes.selectAll()
+    }
+
+    function currentBoxes()
+    {
+        switch (viewerSettings.ocrBlockType)
+        {
+        case 0:
+            return _ocr.wordBoxes
+        case 1:
+            return _ocr.lineBoxes
+        case 2:
+            return _ocr.paragraphBoxes
+        default:
+            return _ocr.wordBoxes
+        }
+    }
+
+    function allCurrentBoxIndexes()
+    {
+        const indexes = []
+        const boxes = currentBoxes()
+
+        for (let i = 0; i < boxes.length; ++i)
+            indexes.push(i)
+
+        return indexes
+    }
+
+    function boxAt(point)
+    {
+        const boxes = currentBoxes()
+
+        for (let i = 0; i < boxes.length; ++i)
+        {
+            const rect = boxes[i].rect
+            if (point.x >= rect.x
+                    && point.x <= rect.x + rect.width
+                    && point.y >= rect.y
+                    && point.y <= rect.y + rect.height)
+                return i
+        }
+
+        return -1
+    }
+
+    function boxIntersects(selectionRect, candidateRect)
+    {
+        return selectionRect.x < candidateRect.x + candidateRect.width
+                && selectionRect.x + selectionRect.width > candidateRect.x
+                && selectionRect.y < candidateRect.y + candidateRect.height
+                && selectionRect.y + selectionRect.height > candidateRect.y
+    }
+
+    function boxesAt(selectionRect)
+    {
+        const indexes = []
+        const boxes = currentBoxes()
+
+        for (let i = 0; i < boxes.length; ++i)
+        {
+            if (boxIntersects(selectionRect, boxes[i].rect))
+                indexes.push(i)
+        }
+
+        return indexes
     }
 
     Maui.ContextualMenu
@@ -139,8 +205,8 @@ Item
             model: switch(viewerSettings.ocrBlockType)
                    {
                    case 0: return _ocr.wordBoxes;
-                   case 1: return _ocr.paragraphBoxes;
-                   case 2: return _ocr.lineBoxes;
+                   case 1: return _ocr.lineBoxes;
+                   case 2: return _ocr.paragraphBoxes;
                    default: return _ocr.wordBoxes;
                    }
 
@@ -177,10 +243,20 @@ Item
                 {
                     id: _highlightRec
                     height: parent.height + 6
-                    width: parent.width+6
+                    width: parent.width + 6
                     anchors.centerIn: parent
-                    radius: 0
-                    visible: opacity > 0
+                    radius: Maui.Style.radiusV
+                    visible: _repeater.count > 0
+                    color: _mouseArea.selected
+                           ? Maui.Theme.linkBackgroundColor
+                           : (_mouseArea.containsMouse
+                              ? Maui.Theme.highlightColor
+                              : "transparent")
+                    border.width: 1
+                    border.color: _mouseArea.selected || _mouseArea.containsMouse
+                                  ? Maui.Theme.highlightedTextColor
+                                  : Maui.Theme.highlightColor
+                    opacity: _mouseArea.selected ? 0.65 : (_mouseArea.containsMouse ? 0.3 : 0.12)
 
                     Behavior on opacity
                     {
@@ -188,18 +264,6 @@ Item
                         {
                             duration: Maui.Style.units.longDuration
                             easing.type: Easing.InOutQuad
-                        }
-                    }
-
-                    ColorAnimation on color
-                    {
-                        from: "transparent"
-                        to: Maui.Theme.linkBackgroundColor
-                        duration: Maui.Style.units.longDuration
-                        easing.type: Easing.InOutQuad
-                        onFinished:
-                        {
-                            _highlightRec.opacity = Qt.binding( ()=>{ return _mouseArea.containsMouse || _mouseArea.selected ? 0.7 : 0} )
                         }
                     }
                 }
@@ -267,13 +331,13 @@ Item
                            {
                                if(Math.round(mouse.x)%2 === 0 || Math.round(mouse.y)%2 === 0)
                                {
-                                   if(_selectionArea.containsPress && mouse.modifiers === Qt.ShiftModifier)
+                                   if(_selectionArea.containsPress && (mouse.modifiers & Qt.ShiftModifier))
                                    {
                                        if(viewerSettings.ocrSelectionType === 0)
                                        {
                                            console.log("Selection tool",pressedPosition, mouse.x, mouse.y)
                                            let point = mapPoint(Qt.point(mouse.x, mouse.y))
-                                           let index = _ocr.wordBoxAt(point)
+                                           let index = boxAt(point)
                                            let box = _repeater.itemAt(index)
                                            if(box)
                                            {
@@ -289,10 +353,12 @@ Item
                                            _boxes.resetSelection()
                                            let point2 = mapPoint(Qt.point(mouse.x, mouse.y))
                                            let point1 = mapPoint(_selectionArea.pressedPosition)
+                                           let rect = Qt.rect(Math.min(point1.x, point2.x),
+                                                              Math.min(point1.y, point2.y),
+                                                              Math.abs(point2.x - point1.x),
+                                                              Math.abs(point2.y - point1.y))
 
-                                           let rect = Qt.rect(point1.x, point1.y, Math.abs(point2.x-point1.x), Math.abs(point2.y-point1.y))
-
-                                           _boxes.selectedIndexes = _ocr.wordBoxesAt(rect)
+                                           _boxes.selectedIndexes = boxesAt(rect)
                                            console.log("Selected rect:" , rect, _boxes.selectedIndexes)
 
                                            for(var i of _boxes.selectedIndexes)
@@ -341,8 +407,22 @@ Item
                    default: return IT.OCR.Word;
                    }
 
-        confidenceThreshold: 40
+        confidenceThreshold: viewerSettings.ocrConfidenceThreshold
         preprocessImage: viewerSettings.ocrPreprocessing
         pageSegMode: viewerSettings.ocrSegMode
+
+        onReadyChanged:
+        {
+            if (!ready)
+                return
+
+            console.log("OCR ready",
+                        "url", filePath,
+                        "wordBoxes", wordBoxes.length,
+                        "lineBoxes", lineBoxes.length,
+                        "paragraphBoxes", paragraphBoxes.length,
+                        "blockType", viewerSettings.ocrBlockType,
+                        "selectionType", viewerSettings.ocrSelectionType)
+        }
     }
 }

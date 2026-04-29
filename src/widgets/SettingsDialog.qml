@@ -4,11 +4,89 @@ import QtQml
 import QtQuick.Layouts
 
 import org.mauikit.controls as Maui
+import org.mauikit.imagetools as IT
 import org.maui.pix as Pix
 
 Maui.SettingsDialog
 {
     id: control
+
+    readonly property var ocrSegModes: [
+        {
+            text: i18n("Auto"),
+            value: IT.OCR.Auto,
+            description: i18n("Let Pix choose the most suitable page layout automatically.")
+        },
+        {
+            text: i18n("Auto with Orientation"),
+            value: IT.OCR.Auto_OSD,
+            description: i18n("Detect both the page layout and its rotation before reading the text.")
+        },
+        {
+            text: i18n("Single Column"),
+            value: IT.OCR.SingleColumn,
+            description: i18n("Best for article-style pages or screenshots with one vertical column of text.")
+        },
+        {
+            text: i18n("Single Line"),
+            value: IT.OCR.SingleLine,
+            description: i18n("Best for captions, labels, or any image that only contains one line of text.")
+        },
+        {
+            text: i18n("Single Block"),
+            value: IT.OCR.SingleBlock,
+            description: i18n("Best for a single paragraph or one compact block of text.")
+        },
+        {
+            text: i18n("Single Word"),
+            value: IT.OCR.SingleWord,
+            description: i18n("Best for isolated words, buttons, and short labels.")
+        }
+    ]
+
+    function ocrSegModeIndex(value)
+    {
+        for (let i = 0; i < ocrSegModes.length; ++i)
+        {
+            if (ocrSegModes[i].value === value)
+                return i
+        }
+
+        return 0
+    }
+
+    function ocrSegModeDescription(value)
+    {
+        return ocrSegModes[ocrSegModeIndex(value)].description
+    }
+
+    function ocrBlockTypeDescription(value)
+    {
+        switch (value)
+        {
+        case 0:
+            return i18n("Highlight each detected word separately.")
+        case 1:
+            return i18n("Highlight full lines of text for easier reading.")
+        case 2:
+            return i18n("Highlight larger paragraph blocks instead of smaller fragments.")
+        default:
+            return i18n("Highlight each detected word separately.")
+        }
+    }
+
+    function ocrSelectionDescription(value)
+    {
+        switch (value)
+        {
+        case 0:
+            return i18n("Hold Shift and drag across text blocks to add them one by one to the selection.")
+        case 1:
+            return i18n("Hold Shift and drag a rectangle to select every detected block inside the area.")
+        default:
+            return i18n("Hold Shift and drag across text blocks to add them one by one to the selection.")
+        }
+    }
 
     Maui.SectionGroup
     {
@@ -62,13 +140,131 @@ Maui.SettingsDialog
         {
             label1.text: i18n("GPS Tags")
             label2.text: i18n("Show GPS tags.")
-            Maui.Controls.badgeText: "!"
 
             Switch
             {
                 checkable: true
                 checked: browserSettings.gpsTags
                 onToggled: browserSettings.gpsTags = !browserSettings.gpsTags
+            }
+        }
+    }
+
+    Maui.SectionGroup
+    {
+        title: i18n("Text Detection")
+
+        Maui.FlexSectionItem
+        {
+            label1.text: i18n("Enable Text Detection")
+            label2.text: i18n("Detect selectable text in images while viewing them.")
+
+            Switch
+            {
+                checked: viewerSettings.enableOCR
+                onToggled: viewerSettings.enableOCR = !viewerSettings.enableOCR
+            }
+        }
+
+        Maui.FlexSectionItem
+        {
+            enabled: viewerSettings.enableOCR
+            label1.text: i18n("Image Preprocessing")
+            label2.text: i18n("Improve contrast before recognition. Helpful for photos and low-contrast scans, but it can be slower.")
+
+            Switch
+            {
+                checked: viewerSettings.ocrPreprocessing
+                onToggled: viewerSettings.ocrPreprocessing = !viewerSettings.ocrPreprocessing
+            }
+        }
+
+        Maui.FlexSectionItem
+        {
+            enabled: viewerSettings.enableOCR
+            label1.text: i18n("Page Segmentation")
+            label2.text: control.ocrSegModeDescription(viewerSettings.ocrSegMode)
+
+            ComboBox
+            {
+                editable: false
+                model: control.ocrSegModes.map((mode) => mode.text)
+                currentIndex: control.ocrSegModeIndex(viewerSettings.ocrSegMode)
+                onActivated: viewerSettings.ocrSegMode = control.ocrSegModes[currentIndex].value
+            }
+        }
+
+        Maui.FlexSectionItem
+        {
+            enabled: viewerSettings.enableOCR
+            label1.text: i18n("Confidence Threshold")
+            label2.text: i18n("Ignore OCR results below this confidence percentage. Lower values keep more text but may include more mistakes.")
+
+            SpinBox
+            {
+                from: 1
+                to: 100
+                value: viewerSettings.ocrConfidenceThreshold
+                onValueModified: viewerSettings.ocrConfidenceThreshold = value
+            }
+        }
+
+        Maui.FlexSectionItem
+        {
+            enabled: viewerSettings.enableOCR
+            label1.text: i18n("Highlight Units")
+            label2.text: control.ocrBlockTypeDescription(viewerSettings.ocrBlockType)
+
+            Maui.ToolActions
+            {
+                autoExclusive: true
+
+                Action
+                {
+                    text: i18n("Word")
+                    checked: viewerSettings.ocrBlockType === 0
+                    onTriggered: viewerSettings.ocrBlockType = 0
+                }
+
+                Action
+                {
+                    text: i18n("Line")
+                    checked: viewerSettings.ocrBlockType === 1
+                    onTriggered: viewerSettings.ocrBlockType = 1
+                }
+
+                Action
+                {
+                    text: i18n("Paragraph")
+                    checked: viewerSettings.ocrBlockType === 2
+                    onTriggered: viewerSettings.ocrBlockType = 2
+                }
+            }
+        }
+
+        Maui.FlexSectionItem
+        {
+            enabled: viewerSettings.enableOCR
+            label1.text: i18n("Selection Mode")
+            label2.text: control.ocrSelectionDescription(viewerSettings.ocrSelectionType)
+
+            Maui.ToolActions
+            {
+                autoExclusive: true
+
+                Action
+                {
+                    text: i18n("Free")
+                    checked: viewerSettings.ocrSelectionType === 0
+                    onTriggered: viewerSettings.ocrSelectionType = 0
+                }
+
+                Action
+                {
+                    text: i18n("Rectangular")
+                    checked: viewerSettings.ocrSelectionType === 1
+                    onTriggered: viewerSettings.ocrSelectionType = 1
+                }
             }
         }
     }
@@ -93,24 +289,12 @@ Maui.SettingsDialog
         Maui.FlexSectionItem
         {
             label1.text: i18n("Preview Bar")
+            label2.text: i18n("Show a strip of nearby images while viewing the current one.")
             Switch
             {
                 checkable: true
                 checked: viewerSettings.previewBarVisible
                 onToggled: tooglePreviewBar()
-            }
-        }
-
-        Maui.FlexSectionItem
-        {
-            label1.text: i18n("Text Detection")
-            label2.text: i18n("Configure settings for text detection in images.")
-
-            ToolButton
-            {
-                checkable: true
-                icon.name: "go-next"
-                onToggled: control.addPage(_ocrPageComponent)
             }
         }
     }
@@ -206,9 +390,4 @@ Maui.SettingsDialog
         }
     }
 
-    Component
-    {
-        id: _ocrPageComponent
-        OCRSettingsPage {}
-    }
 }
