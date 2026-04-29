@@ -115,6 +115,7 @@ private:
     bool m_autoReload;
     bool m_recursive;
     bool m_activeGeolocationTags = false;
+    bool m_ignoreNextDirectoryChange = false;
 
     int m_limit = PIX_QUERY_MAX_LIMIT;
 

@@ -7,6 +7,7 @@ import QtQuick
 
 import QtQuick.Controls
 import QtQuick.Layouts
+import QtQuick.Effects
 
 import org.mauikit.controls as Maui
 import org.mauikit.filebrowsing as FB
@@ -403,51 +404,6 @@ Maui.Page
                 }
             }
 
-            Loader
-            {
-                id: galleryRoll
-
-                asynchronous: true
-                active: viewerSettings.previewBarVisible
-                width: parent.width
-                height: active ? Math.min(60, Math.max(parent.height * 0.12, 60)) : 0
-                y: viewer.imageZooming || viewer.focusedMode ? parent.height :  parent.height - height
-
-                Behavior on y
-                {
-                    NumberAnimation
-                    {
-                        duration: Maui.Style.units.longDuration
-                        easing.type: Easing.InOutQuad
-                    }
-                }
-                sourceComponent:  GalleryRoll
-                {
-                    visible: rollList.count > 1
-
-                    model: control.model
-                    onPicClicked: (index) => view(index)
-                    currentIndex: control.currentPicIndex
-
-
-                    Behavior on opacity
-                    {
-                        NumberAnimation
-                        {
-                            duration: Maui.Style.units.longDuration
-                            easing.type: Easing.InOutQuad
-                        }
-                    }
-
-                    padding: Maui.Style.defaultPadding
-                    background: Rectangle
-                    {
-                        color: "black"
-                        opacity: 0.7
-                    }
-                }
-            }
-
             // Slideshow fade-to-black overlay. Sits above all viewer content
             // (z: 10) but below the page header. Starts transparent; becomes
             // opaque during transitions so the ListView snap is invisible.
@@ -500,6 +456,110 @@ Maui.Page
 
                 onTagClicked: (tag) => openFolder("tags:///"+tag)
             }
+        }
+    }
+
+    Item
+    {
+        id: _previewBar
+        visible: viewerSettings.previewBarVisible && !holder.visible && viewer.count > 1
+        z: 9
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.leftMargin: Maui.Style.contentMargins
+        anchors.rightMargin: Maui.Style.contentMargins
+        anchors.bottom: parent.bottom
+        anchors.bottomMargin: viewer.imageZooming || viewer.focusedMode
+                              ? -height
+                              : ((_tagsbarLoader.active && _tagsbarLoader.item)
+                                 ? _tagsbarLoader.height + Maui.Style.space.small
+                                 : Maui.Style.space.small)
+        height: Math.min(72, Math.max(control.height * 0.12, 72))
+        opacity: viewer.imageZooming || viewer.focusedMode ? 0 : 1
+
+        Behavior on anchors.bottomMargin
+        {
+            NumberAnimation
+            {
+                duration: Maui.Style.units.longDuration
+                easing.type: Easing.InOutQuad
+            }
+        }
+
+        Behavior on opacity
+        {
+            NumberAnimation
+            {
+                duration: Maui.Style.units.longDuration
+                easing.type: Easing.InOutQuad
+            }
+        }
+
+        Rectangle
+        {
+            id: _previewBarBackground
+            anchors.fill: parent
+            color: Maui.Theme.backgroundColor
+            border.color: Maui.Theme.alternateBackgroundColor
+            border.pixelAligned: false
+            radius: Maui.Style.radiusV
+            antialiasing: true
+
+            ShaderEffectSource
+            {
+                id: _previewBarEffect
+                anchors.fill: parent
+                visible: false
+                textureSize: Qt.size(_previewBar.width, _previewBar.height)
+                sourceItem: control
+                sourceRect: Qt.rect(_previewBar.x, _previewBar.y, _previewBar.width, _previewBar.height)
+            }
+
+            Loader
+            {
+                asynchronous: true
+                active: Maui.Style.enableEffects && GraphicsInfo.api !== GraphicsInfo.Software
+                anchors.fill: parent
+                sourceComponent: MultiEffect
+                {
+                    opacity: 0.2
+                    saturation: -0.5
+                    blurEnabled: true
+                    blurMax: 32
+                    blur: 1.0
+                    autoPaddingEnabled: true
+                    source: _previewBarEffect
+                }
+            }
+
+            layer.enabled: radius > 0 && GraphicsInfo.api !== GraphicsInfo.Software
+            layer.effect: MultiEffect
+            {
+                maskEnabled: true
+                maskThresholdMin: 0.5
+                maskSpreadAtMin: 1.0
+                maskSpreadAtMax: 0.0
+                maskThresholdMax: 1.0
+                maskSource: ShaderEffectSource
+                {
+                    sourceItem: Rectangle
+                    {
+                        width: _previewBarBackground.width
+                        height: _previewBarBackground.height
+                        radius: _previewBarBackground.radius
+                    }
+                }
+            }
+        }
+
+        GalleryRoll
+        {
+            anchors.fill: parent
+            anchors.margins: Maui.Style.defaultPadding
+            model: control.model
+            currentIndex: control.currentPicIndex
+            onPicClicked: (index) => view(index)
+            background: Item {}
         }
     }
 

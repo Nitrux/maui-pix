@@ -27,6 +27,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import QtQuick
 import QtCore
 import QtQuick.Controls
+import QtQuick.Layouts
 import QtQuick.Window
 
 import org.mauikit.controls as Maui
@@ -595,51 +596,64 @@ Maui.ApplicationWindow
         ]
 
         footBar.visible: footerControlsVisible
-        footBar.forceCenterMiddleContent: false
+        footBar.forceCenterMiddleContent: true
 
         footBar.leftContent: []
 
         footBar.middleContent: [
-            Item {}
-        ]
-
-        footBar.rightContent: [
-            ToolButton
-            {
-                visible: root.verticallyBiasedLayout && appView.viewerVisible && appView.pixViewer.slideshowActive
-                icon.name: "media-playback-stop"
-                onClicked: appView.pixViewer.slideshowActive = false
-            },
-
-            ToolButton
+            Item
             {
                 visible: root.verticallyBiasedLayout && appView.viewerVisible
-                icon.name: "view-fullscreen"
-                checked: root.fullScreen
-                onClicked: root.fullScreen ? root.showNormal() : root.showFullScreen()
+                Layout.fillWidth: true
             },
 
-            ToolButton
+            Row
             {
                 visible: root.verticallyBiasedLayout && appView.viewerVisible
-                icon.name: "draw-freehand"
-                onClicked: appView.openEditor(appView.pixViewer.currentPicUrl, appView.stackView)
+                spacing: Maui.Style.space.big
+                Layout.alignment: Qt.AlignVCenter
+
+                ToolButton
+                {
+                    visible: appView.pixViewer.slideshowActive
+                    icon.name: "media-playback-stop"
+                    onClicked: appView.pixViewer.slideshowActive = false
+                }
+
+                ToolButton
+                {
+                    icon.name: "view-fullscreen"
+                    checked: root.fullScreen
+                    onClicked: root.fullScreen ? root.showNormal() : root.showFullScreen()
+                }
+
+                ToolButton
+                {
+                    icon.name: "draw-freehand"
+                    onClicked: appView.openEditor(appView.pixViewer.currentPicUrl, appView.stackView)
+                }
+
+                ToolButton
+                {
+                    icon.name: "documentinfo"
+                    onClicked: getFileInfo(appView.pixViewer.currentPicUrl)
+                }
+
+                ToolButton
+                {
+                    icon.name: "edit-delete"
+                    onClicked: removeFiles([appView.pixViewer.currentPicUrl])
+                }
             },
 
-            ToolButton
+            Item
             {
                 visible: root.verticallyBiasedLayout && appView.viewerVisible
-                icon.name: "documentinfo"
-                onClicked: getFileInfo(appView.pixViewer.currentPicUrl)
-            },
-
-            ToolButton
-            {
-                visible: root.verticallyBiasedLayout && appView.viewerVisible
-                icon.name: "edit-delete"
-                onClicked: removeFiles([appView.pixViewer.currentPicUrl])
+                Layout.fillWidth: true
             }
         ]
+
+        footBar.rightContent: []
 
         Item
         {

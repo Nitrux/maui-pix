@@ -422,11 +422,15 @@ bool Gallery::deleteAt(const int &index)
 
 void Gallery::removeFiles(const QStringList &urls)
 {
+    bool removedAny = false;
     for (const auto &url : urls)
     {
         const auto index = this->indexOf(FMH::MODEL_KEY::URL, url);
-        deleteAt(index);
+        removedAny = deleteAt(index) || removedAny;
     }
+
+    if (removedAny)
+        m_ignoreNextDirectoryChange = true;
 }
 
 void Gallery::append(const QVariantMap &pic)
@@ -686,6 +690,13 @@ void Gallery::componentComplete()
     });
 
     connect(m_scanTimer, &QTimer::timeout, [this]() {
+        if (m_ignoreNextDirectoryChange)
+        {
+            qDebug() << "Gallery::rescan() skipped after in-app delete this=" << (void*)this;
+            m_ignoreNextDirectoryChange = false;
+            return;
+        }
+
         this->rescan();
     });
 

@@ -42,10 +42,15 @@ Maui.ContextualMenu
         }
     }
 
-    MenuSeparator{}
+    MenuSeparator
+    {
+        visible: _lastUsedTagItem.visible
+        height: visible ? implicitHeight : -control.spacing
+    }
 
     MenuItem
     {
+        id: _lastUsedTagItem
         visible: browserSettings.lastUsedTag.length > 0
         height: visible ? implicitHeight : -control.spacing
         text: i18n("Add to '%1'", browserSettings.lastUsedTag)
@@ -56,7 +61,11 @@ Maui.ContextualMenu
         }
     }
 
-    MenuSeparator{}
+    MenuSeparator
+    {
+        visible: _lastUsedTagItem.visible
+        height: visible ? implicitHeight : -control.spacing
+    }
 
     MenuItem
     {

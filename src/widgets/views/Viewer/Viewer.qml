@@ -99,7 +99,9 @@ Item
             return
 
         if (viewItem.hasOwnProperty("interactive"))
-            viewItem.interactive = false
+            viewItem.interactive = Qt.binding(function() {
+                return viewItem.contentWidth > viewItem.width || viewItem.contentHeight > viewItem.height
+            })
 
         if (viewItem.hasOwnProperty("contentX"))
             viewItem.contentX = 0
@@ -108,10 +110,10 @@ Item
             viewItem.contentY = 0
 
         if (viewItem.hasOwnProperty("contentWidth"))
-            viewItem.contentWidth = viewItem.width
+            viewItem.contentWidth = Qt.binding(function() { return viewItem.width })
 
         if (viewItem.hasOwnProperty("contentHeight"))
-            viewItem.contentHeight = viewItem.height
+            viewItem.contentHeight = Qt.binding(function() { return viewItem.height })
 
         if (viewItem.hasOwnProperty("returnToBounds"))
             viewItem.returnToBounds()
