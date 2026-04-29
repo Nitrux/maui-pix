@@ -140,6 +140,32 @@ Item
     }
 
     property int lastEditorAction : ITEditor.ImageEditor.ActionType.Colors
+
+    function refreshAfterEditorSave(savedUrl)
+    {
+        const cleanUrl = savedUrl && String(savedUrl).length > 0 ? String(savedUrl) : ""
+
+        Pix.Collection.allImagesModel.rescan()
+
+        Qt.callLater(() =>
+        {
+            if(cleanUrl.length > 0 && pixViewer.currentPicUrl === cleanUrl)
+            {
+                pixViewer.viewer.reloadCurrentItem()
+            }
+
+            if(currentRoute && currentRoute.activeGrid && currentRoute.activeGrid.list && currentRoute.activeGrid.list.refresh)
+            {
+                currentRoute.activeGrid.list.refresh()
+            }
+
+            if(currentRoute && currentRoute.refreshPics)
+            {
+                currentRoute.refreshPics()
+            }
+        })
+    }
+
     Component
     {
         id: _editorComponent
@@ -157,11 +183,44 @@ Item
                 lastEditorAction = getCurrentActionType()
                 _saveNotification.url = url
                 _editor.StackView.view.pop()
+                refreshAfterEditorSave(url)
 
                 if(!control.viewerVisible)
                 {
                     _saveNotification.dispatch()
                 }
+            }
+
+            onSaveAsRequested:
+            {
+                lastEditorAction = getCurrentActionType()
+
+                const sourceUrl = String(url)
+                const props = ({'mode' : FB.FileDialog.Save,
+                                   'browser.settings.filterType' : FB.FMList.IMAGE,
+                                   'singleSelection' : true,
+                                   'suggestedFileName' : FB.FM.getFileInfo(sourceUrl).label,
+                                   'callback' : function(paths)
+                                   {
+                                       if(!paths || paths.length === 0)
+                                           return
+
+                                       const targetUrl = paths[0]
+                                       if(_editor.editor.saveAs(targetUrl))
+                                       {
+                                           _saveNotification.url = targetUrl
+                                           _editor.StackView.view.pop()
+                                           refreshAfterEditorSave(sourceUrl)
+
+                                           if(!control.viewerVisible)
+                                           {
+                                               _saveNotification.dispatch()
+                                           }
+                                       }
+                                   }})
+
+                var dialog = fmDialogComponent.createObject(control, props)
+                dialog.open()
             }
 
             onCanceled:
