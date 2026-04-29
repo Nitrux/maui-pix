@@ -556,4 +556,39 @@ Maui.Page
         _tagsbarLoader.item.goEditMode()
     }
 
+    function removeUrls(urls)
+    {
+        const cleanUrls = (urls || []).map((url) => String(url)).filter((url) => url.length > 0)
+        if (cleanUrls.length === 0)
+            return
+
+        const currentUrl = control.currentPicUrl
+        const currentIndex = control.currentPicIndex
+        const currentRemoved = cleanUrls.includes(currentUrl)
+        const remainingUrls = control.model.getAll()
+                                         .map((item) => item.url ? String(item.url) : "")
+                                         .filter((url) => url.length > 0 && !cleanUrls.includes(url))
+
+        viewer.clear()
+        viewer.appendPics(remainingUrls)
+
+        if (remainingUrls.length === 0)
+        {
+            control.slideshowActive = false
+            control.currentPicIndex = 0
+            control.currentPic = ({url: "", title: ""})
+            control.closeRequested()
+            return
+        }
+
+        if (currentRemoved)
+        {
+            view(Math.min(currentIndex, remainingUrls.length - 1))
+            return
+        }
+
+        const preservedIndex = remainingUrls.indexOf(currentUrl)
+        view(preservedIndex >= 0 ? preservedIndex : Math.min(currentIndex, remainingUrls.length - 1))
+    }
+
 }

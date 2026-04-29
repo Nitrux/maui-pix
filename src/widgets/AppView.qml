@@ -340,6 +340,8 @@ Item
             onAccepted:
             {
                 Pix.Collection.allImagesModel.removeFiles(urls)
+                if (_pixViewer.active)
+                    _pixViewer.removeUrls(urls)
                 selectionBox.clear()
             }
 

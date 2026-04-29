@@ -520,21 +520,6 @@ Maui.ApplicationWindow
             {
                 icon.name: "tag"
                 onClicked: showTags()
-            },
-
-            ToolButton
-            {
-                visible: appView.viewerVisible && !root.verticallyBiasedLayout
-                icon.name: "view-fullscreen"
-                checked: root.fullScreen
-                onClicked: root.fullScreen ? root.showNormal() : root.showFullScreen()
-            },
-
-            ToolButton
-            {
-                visible: appView.viewerVisible && !root.verticallyBiasedLayout
-                icon.name: "draw-freehand"
-                onClicked: appView.openEditor(appView.pixViewer.currentPicUrl, appView.stackView)
             }
         ]
 
@@ -551,6 +536,21 @@ Maui.ApplicationWindow
                 visible: !appView.viewerVisible && !appView.editorVisible && appView.currentSlideshowModel
                 icon.name: "media-playback-start"
                 onClicked: startSlideshowForCurrentRoute()
+            },
+
+            ToolButton
+            {
+                visible: appView.viewerVisible && !root.verticallyBiasedLayout
+                icon.name: "view-fullscreen"
+                checked: root.fullScreen
+                onClicked: root.fullScreen ? root.showNormal() : root.showFullScreen()
+            },
+
+            ToolButton
+            {
+                visible: appView.viewerVisible && !root.verticallyBiasedLayout
+                icon.name: "draw-freehand"
+                onClicked: appView.openEditor(appView.pixViewer.currentPicUrl, appView.stackView)
             },
 
             ToolButton
@@ -597,7 +597,20 @@ Maui.ApplicationWindow
         footBar.visible: footerControlsVisible
         footBar.forceCenterMiddleContent: false
 
-        footBar.leftContent: [
+        footBar.leftContent: []
+
+        footBar.middleContent: [
+            Item {}
+        ]
+
+        footBar.rightContent: [
+            ToolButton
+            {
+                visible: root.verticallyBiasedLayout && appView.viewerVisible && appView.pixViewer.slideshowActive
+                icon.name: "media-playback-stop"
+                onClicked: appView.pixViewer.slideshowActive = false
+            },
+
             ToolButton
             {
                 visible: root.verticallyBiasedLayout && appView.viewerVisible
@@ -611,19 +624,6 @@ Maui.ApplicationWindow
                 visible: root.verticallyBiasedLayout && appView.viewerVisible
                 icon.name: "draw-freehand"
                 onClicked: appView.openEditor(appView.pixViewer.currentPicUrl, appView.stackView)
-            }
-        ]
-
-        footBar.middleContent: [
-            Item {}
-        ]
-
-        footBar.rightContent: [
-            ToolButton
-            {
-                visible: root.verticallyBiasedLayout && appView.viewerVisible && appView.pixViewer.slideshowActive
-                icon.name: "media-playback-stop"
-                onClicked: appView.pixViewer.slideshowActive = false
             },
 
             ToolButton
