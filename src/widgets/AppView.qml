@@ -139,8 +139,6 @@ Item
         TagsSidebar { objectName: "TagsView"; useInternalChrome: false }
     }
 
-    property int lastEditorAction : ITEditor.ImageEditor.ActionType.Colors
-
     function refreshAfterEditorSave(savedUrl)
     {
         const cleanUrl = savedUrl && String(savedUrl).length > 0 ? String(savedUrl) : ""
@@ -175,12 +173,10 @@ Item
             id: _editor
             objectName: "ImageEditor"
             Maui.Controls.showCSD: true
-            initialActionType: lastEditorAction
             headerMargins: Maui.Style.contentMargins
 
             onSaved:
             {
-                lastEditorAction = getCurrentActionType()
                 _saveNotification.url = url
                 _editor.StackView.view.pop()
                 refreshAfterEditorSave(url)
@@ -193,8 +189,6 @@ Item
 
             onSaveAsRequested:
             {
-                lastEditorAction = getCurrentActionType()
-
                 const sourceUrl = String(url)
                 const props = ({'mode' : FB.FileDialog.Save,
                                    'browser.settings.filterType' : FB.FMList.IMAGE,
@@ -225,8 +219,6 @@ Item
 
             onCanceled:
             {
-                lastEditorAction = getCurrentActionType()
-
                 if(!editor.edited)
                 {
                     _editor.StackView.view.pop()
@@ -393,7 +385,7 @@ Item
 
             title: i18np("Delete %1 file?", "Delete %1 files?", urls.length)
             message: i18np("Are you sure you want to delete this file? This action cannot be undone.", "Are you sure you want to delete these %1 files? This action cannot be undone.", urls.length)
-            template.iconSource: "edit-delete"
+            template.iconSource: "user-trash"
             standardButtons: Dialog.Ok | Dialog.Cancel
 
             onAccepted:
