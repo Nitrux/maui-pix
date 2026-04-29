@@ -395,6 +395,7 @@ Item
 
     function startSlideshow()
     {
+        _pixViewer.sourceModel = null
         _pixViewer.model.list.recursive = mainGalleryList.recursive
         _pixViewer.model.list.urls = mainGalleryList.urls
         _pixViewer.view(0)
@@ -405,6 +406,7 @@ Item
 
     function startSlideshowFromModel(galleryList)
     {
+        _pixViewer.sourceModel = null
         _pixViewer.model.list.recursive = galleryList.recursive
         _pixViewer.model.list.urls = galleryList.urls
         _pixViewer.view(0)

@@ -490,6 +490,9 @@ void Gallery::clear()
 void Gallery::rescan()
 {
     qDebug() << "Gallery::rescan() this=" << (void*)this << "urls=" << m_urls;
+    // Mark the model as loading before clearing existing items so views can
+    // distinguish an auto-reload refresh from a genuinely empty collection.
+    this->setStatus(Status::Loading);
     this->clear();
     this->load();
 }

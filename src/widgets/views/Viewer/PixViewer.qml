@@ -55,6 +55,8 @@ Maui.Page
 
     readonly property alias model : viewer.model
     property Maui.BaseModel sourceModel: null
+    readonly property var sourceGalleryList: control.sourceModel ? control.sourceModel.list : null
+    readonly property bool sourceModelLoading: sourceGalleryList && sourceGalleryList.status === Pix.GalleryList.Loading
 
     property bool currentPicFav: false
     property var currentPic : ({url: "", title: ""})
@@ -111,6 +113,23 @@ Maui.Page
 
         function onCountChanged()
         {
+            if (control.sourceModelLoading)
+                return
+
+            control.syncFromSourceModel()
+        }
+    }
+
+    Connections
+    {
+        target: control.sourceGalleryList
+        ignoreUnknownSignals: true
+
+        function onStatusChanged()
+        {
+            if (control.sourceModelLoading)
+                return
+
             control.syncFromSourceModel()
         }
     }
@@ -340,6 +359,7 @@ Maui.Page
         Viewer
         {
             id: viewer
+            sourceModel: control.sourceModel
             visible: !holder.visible
             Layout.fillHeight: true
             Layout.fillWidth: true
@@ -641,9 +661,6 @@ Maui.Page
                                          .map((item) => item.url ? String(item.url) : "")
                                          .filter((url) => url.length > 0 && !cleanUrls.includes(url))
 
-        viewer.clear()
-        viewer.appendPics(remainingUrls)
-
         if (remainingUrls.length === 0)
         {
             control.slideshowActive = false
@@ -652,6 +669,12 @@ Maui.Page
             control.closeRequested()
             return
         }
+
+        if (control.sourceModel)
+            return
+
+        viewer.clear()
+        viewer.appendPics(remainingUrls)
 
         if (currentRemoved)
         {
@@ -668,15 +691,17 @@ Maui.Page
         if (!control.sourceModel)
             return
 
+        // Auto-reload clears the source model before repopulating it. Ignore that
+        // transient empty/loading phase so the viewer does not close itself.
+        if (preferredIndex < 0 && control.sourceModelLoading)
+            return
+
         const sourceUrls = control.sourceModel.getAll()
                                             .map((item) => item.url ? String(item.url) : "")
                                             .filter((url) => url.length > 0)
 
         const currentUrl = control.currentPicUrl
         const fallbackIndex = preferredIndex >= 0 ? preferredIndex : control.currentPicIndex
-
-        viewer.clear()
-        viewer.appendPics(sourceUrls)
 
         if (sourceUrls.length === 0)
         {

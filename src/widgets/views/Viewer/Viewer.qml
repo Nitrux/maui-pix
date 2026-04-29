@@ -25,7 +25,8 @@ Item
     property real picSaturation : 0
     property real picHue : 0
     property real picLightness : 0
-    readonly property alias model : pixModel
+    property var sourceModel: null
+    readonly property var model : sourceModel ? sourceModel : pixModel
 
     property bool focusedMode : false
 
@@ -163,7 +164,7 @@ Item
         focus: true
         interactive: Maui.Handy.hasTransientTouchInput
         cacheBuffer: width * 3
-        model: pixModel
+        model: control.model
         snapMode: ListView.SnapOneItem
         boundsBehavior: Flickable.StopAtBounds
 
