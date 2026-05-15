@@ -100,7 +100,7 @@ Pix *Pix::instance()
 
 const QStringList Pix::getSourcePaths()
 {
-    static const auto defaultSources = QStringList{FMStatic::PicturesPath, FMStatic::DownloadsPath} << cameraPath().toString() << screenshotsPath().toString();
+    static const auto defaultSources = QStringList{FMStatic::PicturesPath};
     QSettings settings;
     settings.beginGroup("Settings");
     const auto sources = settings.value("Sources", defaultSources).toStringList();
