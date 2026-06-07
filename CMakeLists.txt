@@ -5,7 +5,7 @@
 
 cmake_minimum_required(VERSION 3.16)
 
-set(PIX_VERSION 4.0.3)
+set(PIX_VERSION 4.0.4)
 add_compile_definitions(APP_COPYRIGHT_NOTICE="© 2019-2025 Maui Development Team")
 
 set(CMAKE_CXX_STANDARD 17) # to use 17 we need to update exiv2
@@ -47,7 +47,7 @@ include(KDEInstallDirs)
 find_package(Qt6 ${REQUIRED_QT_VERSION} REQUIRED NO_MODULE COMPONENTS Core Gui Qml Quick Positioning Concurrent)
 find_package(KF6 ${REQUIRED_KF_VERSION} REQUIRED COMPONENTS I18n CoreAddons KIO WindowSystem)
 
-find_package(MauiKit4 4.0.3 REQUIRED COMPONENTS FileBrowsing ImageTools)
+find_package(MauiKit4 4.0.4 REQUIRED COMPONENTS FileBrowsing ImageTools)
 #find_package(CaskServer REQUIRED)
 
 include(KDECMakeSettings)
