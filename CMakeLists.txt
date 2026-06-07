@@ -38,6 +38,7 @@ set(QT_MAJOR_VERSION 6)
 set(REQUIRED_QT_VERSION 6.9)
 
 set(REQUIRED_KF_VERSION 6.13.0)
+set(REQUIRED_MAUIKIT_VERSION 4.0.4)
 
 find_package(ECM ${REQUIRED_KF_VERSION} REQUIRED NO_MODULE)
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake" ${ECM_MODULE_PATH})
@@ -47,7 +48,7 @@ include(KDEInstallDirs)
 find_package(Qt6 ${REQUIRED_QT_VERSION} REQUIRED NO_MODULE COMPONENTS Core Gui Qml Quick Positioning Concurrent)
 find_package(KF6 ${REQUIRED_KF_VERSION} REQUIRED COMPONENTS I18n CoreAddons KIO WindowSystem)
 
-find_package(MauiKit4 4.0.4 REQUIRED COMPONENTS FileBrowsing ImageTools)
+find_package(MauiKit4 ${REQUIRED_MAUIKIT_VERSION} REQUIRED COMPONENTS FileBrowsing ImageTools)
 #find_package(CaskServer REQUIRED)
 
 include(KDECMakeSettings)
