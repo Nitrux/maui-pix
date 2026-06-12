@@ -11,7 +11,6 @@ Maui.SettingsDialog
     Maui.SectionGroup
     {
         title: i18n("Collection")
-        description: i18n("Browse, select, and resize image grids with the keyboard.")
 
         Maui.FlexSectionItem
         {
@@ -99,7 +98,6 @@ Maui.SettingsDialog
     Maui.SectionGroup
     {
         title: i18n("Viewer")
-        description: i18n("Navigate and act on images while viewing them.")
 
         Maui.FlexSectionItem
         {
