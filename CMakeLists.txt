@@ -101,7 +101,7 @@ add_subdirectory(src)
 
 ki18n_install(po)
 
-install(FILES org.kde.pix.appdata.xml DESTINATION ${KDE_INSTALL_METAINFODIR})
+install(FILES org.maui.pix.appdata.xml DESTINATION ${KDE_INSTALL_METAINFODIR})
 
 feature_summary(WHAT ALL FATAL_ON_MISSING_REQUIRED_PACKAGES)
 

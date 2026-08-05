@@ -82,7 +82,7 @@ target_link_libraries(${PROJECT_NAME}
     KF6::WindowSystem)
 
 install(TARGETS ${PROJECT_NAME} ${KDE_INSTALL_TARGETS_DEFAULT_ARGS})
-install(FILES org.kde.pix.desktop DESTINATION ${KDE_INSTALL_APPDIR})
+install(FILES org.maui.pix.desktop DESTINATION ${KDE_INSTALL_APPDIR})
 #TODO: port to ecm_install_icons()
 install(FILES assets/pix.svg DESTINATION ${KDE_INSTALL_ICONDIR}/hicolor/scalable/apps)
 
