@@ -14,8 +14,6 @@ Maui.ContextualMenu
     property int index : -1
     property Maui.BaseModel model : null
     property var item : ({})
-    readonly property string totalCount : filterSelection(item.url).length > 1 ? filterSelection(item.url).length : ""
-
     property alias editMenuItem : _editMenuItem
 
     onOpened:
@@ -109,7 +107,6 @@ Maui.ContextualMenu
     {
         text: i18n("Remove")
         icon.name: "edit-delete"
-        Maui.Controls.badgeText: control.totalCount
         Maui.Controls.status: Maui.Controls.Negative
         onTriggered: removeFiles(filterSelection(item.url))
     }
