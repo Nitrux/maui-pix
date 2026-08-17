@@ -345,7 +345,6 @@ Maui.Page
         visible: viewer.count === 0 /*|| viewer.currentItem.status !== Image.Ready*/
         anchors.fill: parent
         emoji: "image-x-generic"
-        isMask: true
         title : i18n("No Pics!")
         body: i18n("Open an image from your collection")
     }

@@ -84,8 +84,6 @@ Maui.GridBrowserDelegate
 
             imageWidth: control.imageWidth
             imageHeight: control.imageHeight
-
-            isMask: true
             image.cache: false
             image.autoTransform: true
         }

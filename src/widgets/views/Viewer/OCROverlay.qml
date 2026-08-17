@@ -129,7 +129,7 @@ Item
             visible: enabled
             height: visible ? implicitHeight : -_selectionMenu.spacing
             text: i18n("Save as Contact")
-            icon.name: "contact-new-symbolic"
+            icon.name: "list-add-user"
             onTriggered: Qt.openUrlExternally("tel:"+control.textSelected)
         }
 
@@ -149,7 +149,7 @@ Item
             visible: enabled
             height: visible ? implicitHeight : -_selectionMenu.spacing
             text: i18n("Open Link")
-            icon.name: "website-symbolic"
+            icon.name: "internet-web-browser"
             onTriggered: Qt.openUrlExternally(control.textSelected)
         }
 

@@ -16,7 +16,7 @@ PlacesModel::PlacesModel(QObject *parent) : MauiList(parent)
     m_quickPlaces << QVariantMap{{"icon", "love"}, {"path", "tags:///fav"}, {"label", i18n("Favorites")}};
     m_quickPlaces << QVariantMap{{"icon", "folder-download"}, {"path", FMStatic::DownloadsPath}, {"label", i18n("Downloads")}};
     m_quickPlaces << QVariantMap{{"icon", "folder-pictures"}, {"path", FMStatic::PicturesPath}, {"label", i18n("Pictures")}};
-    m_quickPlaces << QVariantMap{{"icon", "org.gnome.Screenshot-symbolic"}, {"path", Pix::screenshotsPath().toString()}, {"label", i18n("Screenshots")}};
+    m_quickPlaces << QVariantMap{{"icon", "camera-photo"}, {"path", Pix::screenshotsPath().toString()}, {"label", i18n("Screenshots")}};
     m_quickPlaces << QVariantMap{{"icon", "camera-web"}, {"path", Pix::cameraPath().toString()}, {"label", i18n("Camera")}};
     m_quickPlaces << QVariantMap{{"icon", "view-list-icons"}, {"path", "collection:///"}, {"label", i18n("Collection")}};
 }
