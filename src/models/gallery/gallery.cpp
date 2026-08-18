@@ -18,6 +18,7 @@
 #include <KLocalizedString>
 
 #include <MauiKit4/FileBrowsing/fileloader.h>
+#include <MauiKit4/FileBrowsing/fileoperation.h>
 #include <MauiKit4/FileBrowsing/fmstatic.h>
 #include <MauiKit4/FileBrowsing/tagging.h>
 #include <MauiKit4/ImageTools/exiv2extractor.h>
@@ -135,7 +136,6 @@ Gallery::Gallery(QObject *parent)
     , m_autoReload(true)
     , m_recursive(true)
 {
-    qDebug() << "Gallery::Gallery() this=" << (void*)this << "parent=" << (void*)parent;
     // Limit concurrency so thumbnail generation doesn't spike memory.
     // Two threads: one is usually decoding a source image, the other is saving.
     m_thumbPool->setMaxThreadCount(2);
@@ -148,7 +148,6 @@ Gallery::Gallery(QObject *parent)
 
 Gallery::~Gallery()
 {
-    qDebug() << "Gallery::~Gallery() this=" << (void*)this << "urls=" << m_urls << "items=" << list.size();
     // Invalidate pending work and detach the pool so queued/deleting objects do
     // not try to synchronously wait from a pool worker thread during teardown.
     ++m_generation;
@@ -178,7 +177,6 @@ const FMH::MODEL_LIST &Gallery::items() const
 
 void Gallery::setUrls(const QList<QUrl> &urls)
 {
-    qDebug() << "Gallery::setUrls() this=" << (void*)this << "old=" << this->m_urls << "new=" << urls;
 
     if(this->m_urls == urls)
         return;
@@ -228,10 +226,8 @@ QStringList Gallery::files() const
 
 void Gallery::scan(const QList<QUrl> &urls, const bool &recursive, const int &limit)
 {
-    qDebug() << "Gallery::scan() this=" << (void*)this << "urls=" << urls << "recursive=" << recursive;
     if(m_urls.isEmpty())
     {
-        qDebug() << "Gallery::scan() this=" << (void*)this << "no URLs — skipping scan";
         this->setStatus(Status::Error, i18n("No sources found to scan."));
         return;
     }
@@ -242,7 +238,6 @@ void Gallery::scan(const QList<QUrl> &urls, const bool &recursive, const int &li
         if(url.scheme() == "gps")
         {
             const auto gpsId = url.toString().replace("gps:///", "");
-            qDebug() << "Collection images from GPS Tags" << gpsId;
 
             FMH::MODEL_LIST images;
             const auto urls = GpsImages::getInstance()->urls(gpsId);
@@ -288,7 +283,6 @@ void Gallery::scanGpsTags()
             cityId = GpsImages::getInstance()->gpsTag(urlId);
         }else
         {
-            qDebug() << "CREATING A NEW CITY";
             cityId = getCityId(url);
             if(!cityId.isEmpty())
             {
@@ -310,7 +304,6 @@ void Gallery::scanGpsTags()
 
     connect(m_futureWatcher, &QFutureWatcher<void>::finished, [this]()
             {
-                qDebug() << "FINISHED SCANNING GPS TAGS" << GpsImages::getInstance()->values();
                 setCitiesModel();
             });
 }
@@ -354,8 +347,6 @@ void Gallery::watchSourceDirectories(const QList<QUrl> &urls, bool recursive)
 void Gallery::insertCity(const QString & cityId)
 {
     if (!m_cities.contains(cityId) && !cityId.isEmpty ()) {
-
-        qDebug() << "FOUND CITY <<" << cityId;
         m_cities << cityId;
     }
 }
@@ -385,7 +376,6 @@ void Gallery::setCitiesModel()
 
 void Gallery::setStatus(const Gallery::Status &status, const QString &error)
 {
-    qDebug() << "Gallery::setStatus() this=" << (void*)this << "old=" << m_status << "new=" << status << "error=" << error;
     if (this->m_status != status)
     {
         this->m_status = status;
@@ -410,52 +400,95 @@ bool Gallery::deleteAt(const int &index)
     if (index >= this->list.size() || index < 0)
         return false;
 
-    const auto index_ = index;
-
-    Q_EMIT this->preItemRemoved(index_);
-    auto item = this->list.takeAt(index_);
-    FMStatic::removeFiles({item[FMH::MODEL_KEY::URL]});
-    Q_EMIT this->postItemRemoved();
-
+    removeFiles({this->list.at(index)[FMH::MODEL_KEY::URL]});
     return true;
 }
 
 void Gallery::removeFiles(const QStringList &urls)
 {
-    bool removedAny = false;
+    QStringList pendingUrls;
+    QList<QUrl> pendingFileUrls;
+
     for (const auto &url : urls)
     {
-        const auto index = this->indexOf(FMH::MODEL_KEY::URL, url);
-        removedAny = deleteAt(index) || removedAny;
+        if (pendingUrls.contains(url) || this->indexOf(FMH::MODEL_KEY::URL, url) < 0)
+            continue;
+
+        pendingUrls.append(url);
+        pendingFileUrls.append(QUrl(url));
     }
 
-    if (removedAny)
-        m_ignoreNextDirectoryChange = true;
+    if (pendingUrls.isEmpty())
+        return;
+
+    auto operation = FileOperation::instance();
+    if (operation->running())
+    {
+        const auto message = i18n("Another file operation is already running.");
+        qWarning() << "Gallery::removeFiles():" << message;
+        setStatus(Status::Error, message);
+        return;
+    }
+
+    const auto connection = connect(operation, &FileOperation::finished, this,
+                                    [this, pendingUrls](bool success, const QString &errorMessage)
+    {
+        if (!success)
+        {
+            m_ignoreNextDirectoryChange = false;
+            const auto message = errorMessage.isEmpty()
+                ? i18n("Could not delete the selected files.")
+                : errorMessage;
+            qWarning() << "Gallery::removeFiles():" << message;
+            setStatus(Status::Error, message);
+            return;
+        }
+
+        for (const auto &url : pendingUrls)
+        {
+            const auto index = this->indexOf(FMH::MODEL_KEY::URL, url);
+            if (index < 0)
+                continue;
+
+            Q_EMIT this->preItemRemoved(index);
+            this->list.removeAt(index);
+            Q_EMIT this->postItemRemoved();
+        }
+
+        setStatus(Status::Ready);
+    }, Qt::SingleShotConnection);
+
+    m_ignoreNextDirectoryChange = true;
+    if (!FMStatic::removeFiles(pendingFileUrls))
+    {
+        disconnect(connection);
+        m_ignoreNextDirectoryChange = false;
+        const auto message = i18n("Could not start deleting the selected files.");
+        qWarning() << "Gallery::removeFiles():" << message;
+        setStatus(Status::Error, message);
+    }
 }
 
 void Gallery::append(const QVariantMap &pic)
 {
-    const int startIndex = this->list.size();
     const auto item = FMH::toModel(pic);
     Q_EMIT this->preItemAppended();
     this->list << item;
     Q_EMIT this->postItemAppended();
-    scheduleThumbnails(FMH::MODEL_LIST{item}, startIndex);
+    scheduleThumbnails(FMH::MODEL_LIST{item});
 }
 
 void Gallery::append(const QString &url)
 {
-    const int startIndex = this->list.size();
     const auto item = picInfo(QUrl::fromUserInput(url));
     Q_EMIT this->preItemAppended();
     this->list << item;
     Q_EMIT this->postItemAppended();
-    scheduleThumbnails(FMH::MODEL_LIST{item}, startIndex);
+    scheduleThumbnails(FMH::MODEL_LIST{item});
 }
 
 void Gallery::clear()
 {
-    qDebug() << "Gallery::clear() this=" << (void*)this << "items=" << list.size();
     m_scanTimer->stop();
     m_thumbApplyTimer->stop();
     m_pendingThumbnailUpdates.clear();
@@ -489,7 +522,6 @@ void Gallery::clear()
 
 void Gallery::rescan()
 {
-    qDebug() << "Gallery::rescan() this=" << (void*)this << "urls=" << m_urls;
     // Mark the model as loading before clearing existing items so views can
     // distinguish an auto-reload refresh from a genuinely empty collection.
     this->setStatus(Status::Loading);
@@ -499,7 +531,6 @@ void Gallery::rescan()
 
 void Gallery::load()
 {
-    qDebug() << "Gallery::load() this=" << (void*)this << "urls=" << m_urls;
     this->scan(m_urls, m_recursive, m_limit);
 }
 
@@ -565,9 +596,8 @@ void Gallery::updateGpsTag(const QString &url)
     }
 }
 
-void Gallery::scheduleThumbnails(const FMH::MODEL_LIST &newItems, int startIndex)
+void Gallery::scheduleThumbnails(const FMH::MODEL_LIST &newItems)
 {
-    qDebug() << "Gallery::scheduleThumbnails() this=" << (void*)this << "newItems=" << newItems.size() << "startIndex=" << startIndex;
     const quint64 gen = m_generation.load(std::memory_order_relaxed);
 
     for (int i = 0; i < newItems.size(); ++i)
@@ -648,11 +678,9 @@ void Gallery::applyPendingThumbnailUpdates()
 
 void Gallery::componentComplete()
 {
-    qDebug() << "Gallery::componentComplete() this=" << (void*)this << "urls=" << m_urls << "willLoad=" << !m_urls.isEmpty();
 
     connect(m_fileLoader, &FMH::FileLoader::finished, [this](FMH::MODEL_LIST items) {
         Q_UNUSED(items)
-        qDebug() << "Gallery: fileLoader finished this=" << (void*)this << "total items=" << list.size();
 
         Q_EMIT this->filesChanged();
         Q_EMIT this->foldersChanged();
@@ -666,12 +694,9 @@ void Gallery::componentComplete()
     });
 
     connect(m_fileLoader, &FMH::FileLoader::itemsReady, [this](FMH::MODEL_LIST items) {
-        qDebug() << "Gallery: itemsReady this=" << (void*)this << "batch=" << items.size() << "listSizeBefore=" << list.size();
 
         if (items.isEmpty())
             return;
-
-        const int startIndex = this->list.size();
         Q_EMIT preItemsAppended(items.size());
         this->list << items;
         Q_EMIT postItemAppended();
@@ -680,22 +705,20 @@ void Gallery::componentComplete()
         // Queue thumbnail generation for any items whose thumbnails weren't cached.
         // This runs after the UI is already showing the scan results, so it doesn't
         // block first paint. Thumbnails appear progressively as they're generated.
-        scheduleThumbnails(items, startIndex);
+        scheduleThumbnails(items);
     });
 
     connect(m_fileLoader, &FMH::FileLoader::itemReady, [this](FMH::MODEL item) {
         this->insertFolder(item[FMH::MODEL_KEY::SOURCE]);
     });
 
-    connect(m_watcher, &QFileSystemWatcher::directoryChanged, [this](QString dir) {
-        qDebug() << "Dir changed" << dir;
+    connect(m_watcher, &QFileSystemWatcher::directoryChanged, [this] {
         this->m_scanTimer->start();
     });
 
     connect(m_scanTimer, &QTimer::timeout, [this]() {
         if (m_ignoreNextDirectoryChange)
         {
-            qDebug() << "Gallery::rescan() skipped after in-app delete this=" << (void*)this;
             m_ignoreNextDirectoryChange = false;
             return;
         }
@@ -748,7 +771,6 @@ void Gallery::scanImagesText()
     {
         if(!QString(item[FMH::MODEL_KEY::CONTEXT]).isEmpty())
         {
-            qDebug() << "EXISTING TEXT" << item[FMH::MODEL_KEY::CONTEXT];
             continue;
         }
 
@@ -766,7 +788,6 @@ void Gallery::scanImagesText()
         }
 
         item[FMH::MODEL_KEY::CONTEXT] = text.isEmpty() ? "---" : text;
-        qDebug() << "FOUND TEXT" << item[FMH::MODEL_KEY::CONTEXT];
 
         this->updateModel(i, {FMH::MODEL_KEY::CONTEXT});
         i++;
@@ -797,7 +818,6 @@ GpsImages::GpsImages() : QObject()
 {
     connect(qApp, &QCoreApplication::aboutToQuit, [this]()
             {
-                qDebug() << "Lets remove Tagging singleton instance and all opened Tagging DB connections.";
                 this->deleteLater();
             });
 }

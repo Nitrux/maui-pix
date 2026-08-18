@@ -71,24 +71,18 @@ QUrl Pix::screenshotsPath()
 
 Gallery *Pix::allImagesModel()
 {
-    qDebug() << "Pix::allImagesModel() existing=" << (void*)m_allImagesModel;
     if(!m_allImagesModel)
     {
-        qDebug() << "Pix::allImagesModel() creating new Gallery";
 
         m_allImagesModel = new Gallery(this);
-        qDebug() << "Pix::allImagesModel() created Gallery this=" << (void*)m_allImagesModel;
         m_allImagesModel->setUrls(QUrl::fromStringList(sources()));
         m_allImagesModel->setRecursive(true);
         m_allImagesModel->componentComplete(); //call this to actually get the data
         connect(this, &Pix::sourcesChanged, [this]()
                 {
-                    qDebug() << "Pix::sourcesChanged -> updating allImagesModel urls";
                     m_allImagesModel->setUrls(QUrl::fromStringList(sources()));
                 });
     }
-
-    qDebug() << "Pix::allImagesModel() returning=" << (void*)m_allImagesModel;
 
     return m_allImagesModel;
 }
@@ -105,7 +99,6 @@ const QStringList Pix::getSourcePaths()
     settings.beginGroup("Settings");
     const auto sources = settings.value("Sources", defaultSources).toStringList();
     settings.endGroup();
-    qDebug() << "SOURCES" << sources;
     return sources;
 }
 
@@ -198,7 +191,6 @@ void FileWatcher::setUrl(const QString &newUrl)
     if (m_url == newUrl)
         return;
     m_url = newUrl;
-    qDebug()  << "new file to watch" << m_url;
     m_watcher->removePaths(m_watcher->files());
     m_watcher->addPath(QUrl(m_url).toLocalFile());
 
@@ -209,12 +201,10 @@ void FileWatcher::onFileChanged(const QString &url)
 {
     if(FMH::fileExists(QUrl::fromLocalFile(url)))
     {
-        qDebug() << "The watched file was removed" << url;
 
         Q_EMIT fileModified();
     }else
     {
-        qDebug() << "The watched file was changed" << url;
 
         m_watcher->removePaths(m_watcher->files());
         setUrl({});

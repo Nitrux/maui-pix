@@ -20,6 +20,11 @@ Item
     Keys.enabled: true
     Keys.forwardTo: _stackView
 
+    FB.FileOperationDialog
+    {
+        id: _fileOperationDialog
+    }
+
     property QtObject tagsDialog : null
 
     readonly property alias pixViewer : _pixViewer

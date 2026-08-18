@@ -415,14 +415,6 @@ Item
         {
             if (!ready)
                 return
-
-            console.log("OCR ready",
-                        "url", filePath,
-                        "wordBoxes", wordBoxes.length,
-                        "lineBoxes", lineBoxes.length,
-                        "paragraphBoxes", paragraphBoxes.length,
-                        "blockType", viewerSettings.ocrBlockType,
-                        "selectionType", viewerSettings.ocrSelectionType)
         }
     }
 }

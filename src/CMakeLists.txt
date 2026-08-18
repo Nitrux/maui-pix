@@ -54,9 +54,6 @@ qt_add_qml_module(${PROJECT_NAME} URI app.maui.pix
     widgets/AppView.qml
     widgets/views/CollectionView.qml)
 
-target_compile_definitions(${PROJECT_NAME}
-    PRIVATE $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:QT_QML_DEBUG>)
-
 if(CMAKE_SYSTEM_PROCESSOR MATCHES "^(x86_64|amd64|AMD64)$")
     if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
         target_compile_options(${PROJECT_NAME} PRIVATE -march=x86-64-v3)

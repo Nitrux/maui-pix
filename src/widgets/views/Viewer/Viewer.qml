@@ -334,7 +334,6 @@ Item
                         running: imageReady && _viewerLoaderDelegate.isCurrentItem && !ready && viewerSettings.enableOCR
                         onTriggered:
                         {
-                            console.log("Start OCR")
                             ready = true
                         }
                     }

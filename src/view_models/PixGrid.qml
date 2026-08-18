@@ -36,7 +36,6 @@ Maui.Page
 
     onItemSizeChanged:
     {
-        console.debug("PixGrid itemSize changed", itemSize, "preset", browserSettings.previewSizePreset, "gridWheelResizeEnabled", _gridView.wheelResizeEnabled)
 
         if (_gridView && _gridView.itemSize !== itemSize)
             _gridView.itemSize = itemSize
@@ -243,7 +242,6 @@ Maui.Page
 
         Component.onCompleted:
         {
-            console.debug("PixGrid GridBrowser ready", "itemSize", itemSize, "wheelResizeEnabled", wheelResizeEnabled, "adaptContent", adaptContent)
         }
 
         onItemSizeChanged:
