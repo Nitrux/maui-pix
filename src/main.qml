@@ -74,6 +74,7 @@ Maui.ApplicationWindow
         property bool fitPreviews : false
         property bool autoReload: true
         property string previewSizePreset : "medium"
+        property int previewSize: 0
         property string sortBy : "modified"
         property int sortOrder: Qt.DescendingOrder
         property bool gpsTags : false
@@ -94,25 +95,6 @@ Maui.ApplicationWindow
 
         property int slideshowInterval: 5  // seconds per image
         property bool slideshowLoop: true
-    }
-
-    Maui.InfoDialog
-    {
-        id: _confirmCloseDialog
-        property bool prevent : true
-        template.iconSource: "dialog-warning"
-        message: i18n("There are multiple windows still open. Are you sure you want to close the application?")
-        standardButtons: Dialog.Yes | Dialog.Cancel
-        onAccepted:
-        {
-            prevent = false
-            root.close()
-        }
-        onRejected:
-        {
-            prevent = true
-            close()
-        }
     }
 
     Component
@@ -380,17 +362,6 @@ Maui.ApplicationWindow
             }
         }
     }
-
-    onClosing: (close) =>
-               {
-                   if(Maui.App.windowsOpened() > 1 && _confirmCloseDialog.prevent)
-                   {
-                       _confirmCloseDialog.open()
-                       close.accepted = false
-                       return
-                   }
-                   close.accepted = true
-               }
 
     Maui.WindowBlur
     {
@@ -808,7 +779,11 @@ Maui.ApplicationWindow
         return Math.max(minimumDeterministicPreviewSize, Math.round(previewSizeForPreset(preset) / dpr))
     }
 
-    function setPreviewSize(preset) { browserSettings.previewSizePreset = preset }
+    function setPreviewSize(preset)
+    {
+        browserSettings.previewSizePreset = preset
+        browserSettings.previewSize = effectivePreviewSize(preset)
+    }
     function setNextPreviewSize()
     {
         switch (browserSettings.previewSizePreset)

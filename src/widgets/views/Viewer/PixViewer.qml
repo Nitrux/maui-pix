@@ -176,7 +176,7 @@ Maui.Page
 
         ToolButton
         {
-            icon.name: "edit-add-effect"
+            icon.name: "document-edit"
             onClicked:
             {
                 if (control.currentPicUrl.length > 0)

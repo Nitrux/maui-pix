@@ -20,7 +20,38 @@ Maui.Page
     Keys.forwardTo: _gridView
     Keys.enabled: true
 
-    property int itemSize : effectivePreviewSize(browserSettings.previewSizePreset)
+    property int itemSize
+
+    Component.onCompleted:
+    {
+        syncPreviewSize()
+    }
+
+    function syncPreviewSize()
+    {
+        const configuredSize = browserSettings.previewSize > 0
+                ? browserSettings.previewSize
+                : effectivePreviewSize(browserSettings.previewSizePreset)
+
+        if (itemSize !== configuredSize)
+            itemSize = configuredSize
+    }
+
+    Connections
+    {
+        target: browserSettings
+
+        function onPreviewSizeChanged()
+        {
+            syncPreviewSize()
+        }
+
+        function onPreviewSizePresetChanged()
+        {
+            if (browserSettings.previewSize <= 0)
+                syncPreviewSize()
+        }
+    }
 
     readonly property alias listModel : pixModel
     readonly property alias menu : _picMenu
@@ -52,6 +83,9 @@ Maui.Page
 
         if (browserSettings.previewSizePreset !== preset)
             browserSettings.previewSizePreset = preset
+
+        if (browserSettings.previewSize !== size)
+            browserSettings.previewSize = size
 
         if (_gridView.itemSize !== size)
             _gridView.itemSize = size
@@ -252,6 +286,9 @@ Maui.Page
                 console.debug("PixGrid clamping wheel-resized itemSize", itemSize, "to", clampedSize, "allowedRange", control.minimumPreviewSize, control.maximumPreviewSize)
                 itemSize = clampedSize
             }
+
+            if (browserSettings.previewSize !== clampedSize)
+                browserSettings.previewSize = clampedSize
         }
 
         Loader

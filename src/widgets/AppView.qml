@@ -250,7 +250,7 @@ Item
     Loader
     {
         anchors.fill: parent
-        visible: _dropAreaLoader.item.containsDrag
+        visible: _dropAreaLoader.item.containsDrag && !_dropAreaLoader.item.internalDrag
         asynchronous: true
 
         sourceComponent: Rectangle
@@ -285,17 +285,22 @@ Item
 
         sourceComponent: DropArea
         {
+            property bool internalDrag: false
+
             onDropped: (drop) =>
                        {
-                if(drop.urls)
+                if(!internalDrag && drop.urls)
                 {
                     openExternalPics(drop.urls, 0)
                 }
+
+                internalDrag = false
             }
 
             onEntered: (drag) =>
                        {
-                if(drag.source)
+                internalDrag = !!drag.source
+                if(internalDrag)
                 {
                     return
                 }
@@ -305,6 +310,8 @@ Item
                     _stackView.push(_pixViewer)
                 }
             }
+
+            onExited: internalDrag = false
         }
     }
 

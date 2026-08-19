@@ -295,9 +295,9 @@ Item
             height: ListView.view.height
             width: ListView.view.width
             readonly property bool isCurrentItem: ListView.isCurrentItem
-            readonly property bool zooming: item.zooming
+            readonly property bool zooming: item ? item.zooming : false
             readonly property bool isAnimated : model.format === "gif" || model.format === "avif"
-            asynchronous: true
+            asynchronous: false
 
             sourceComponent: isAnimated ? _animatedImgComponent : _imgComponent
 

@@ -10,7 +10,7 @@ Maui.GridBrowserDelegate
 
     property bool fit : false
 
-    maskRadius: 0
+    maskRadius: control.radius
     draggable: true
 
     tooltipText: model.url.replace("file://", "")
