@@ -185,10 +185,8 @@ Item
         Keys.forwardTo: currentItem
         Keys.onPressed: (event) =>
                         {
-                            console.log("key pressed", event.key, event.key == Qt.Key_Control )
                             if(event.key === Qt.Key_Shift)
                             {
-                                console.log("shift pressed")
                                 shiftPressed = true
                                 event.accepted = true
                                 return
@@ -210,7 +208,6 @@ Item
 
                             if(event.key === Qt.Key_E && (event.modifiers & Qt.ControlModifier))
                             {
-                                console.log("Current pic is", currentPic)
                                 openEditor(currentPic.url, _stackView)
                                 event.accepted = true
                                 return
@@ -237,7 +234,7 @@ Item
                                 return
                             }
 
-                            if(event.key === Qt.Key_D && (event.modifiers & Qt.ControlModifier))
+                            if(event.key === Qt.Key_Delete || (event.key === Qt.Key_D && (event.modifiers & Qt.ControlModifier)))
                             {
                                 removeFiles([currentPic.url])
                                 event.accepted = true
@@ -265,8 +262,6 @@ Item
                         {
                             if(event.key == Qt.Key_Shift)
                             {
-                                console.log("shift released")
-
                                 shiftPressed = false
                                 event.accepted = true
                                 return

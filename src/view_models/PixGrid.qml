@@ -398,6 +398,15 @@ Maui.Page
                                 return
                             }
 
+                            if(event.key === Qt.Key_Delete)
+                            {
+                                if(item && item.url)
+                                    removeFiles(filterSelection(item.url))
+
+                                event.accepted = true
+                                return
+                            }
+
                             if(event.key === Qt.Key_A && (event.modifiers & Qt.ControlModifier))
                             {
                                 selectAll()

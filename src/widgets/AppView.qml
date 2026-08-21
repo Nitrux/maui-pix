@@ -23,6 +23,7 @@ Item
     FB.FileOperationDialog
     {
         id: _fileOperationDialog
+        onClosed: control.restoreActiveRouteFocus()
     }
 
     property QtObject tagsDialog : null
@@ -77,6 +78,15 @@ Item
     {
         if (activePixGridItem)
             selectItem(activePixGridItem)
+    }
+
+    function restoreActiveRouteFocus()
+    {
+        Qt.callLater(function()
+        {
+            if (control.currentRoute)
+                control.currentRoute.forceActiveFocus()
+        })
     }
 
     Component
@@ -321,7 +331,11 @@ Item
         IT.ImageInfoDialog
         {
             onGpsEdited:(url) => Pix.Collection.allImagesModel.updateGpsTag(url)
-            onClosed: destroy()
+            onClosed:
+            {
+                control.restoreActiveRouteFocus()
+                destroy()
+            }
         }
     }
 
@@ -331,6 +345,8 @@ Item
 
         FB.TagsDialog
         {
+            onClosed: control.restoreActiveRouteFocus()
+
             Maui.Notification
             {
                 id: _taggedNotification
@@ -371,7 +387,11 @@ Item
         FB.FileDialog
         {
             mode: FB.FileDialog.Open
-            onClosed: destroy()
+            onClosed:
+            {
+                control.restoreActiveRouteFocus()
+                destroy()
+            }
         }
     }
 
@@ -382,6 +402,7 @@ Item
         {
             onClosed:
             {
+                control.restoreActiveRouteFocus()
                 destroy()
             }
         }
@@ -408,13 +429,18 @@ Item
                 selectionBox.clear()
             }
 
-            onClosed: destroy()
+            onClosed:
+            {
+                control.restoreActiveRouteFocus()
+                destroy()
+            }
         }
     }
 
     FB.OpenWithDialog
     {
         id: _openWithDialog
+        onClosed: control.restoreActiveRouteFocus()
     }
 
     function setPreviewSize(preset)

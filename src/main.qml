@@ -100,7 +100,14 @@ Maui.ApplicationWindow
     Component
     {
         id: _shortcutsDialogComponent
-        ShortcutsDialog { onClosed: destroy() }
+        ShortcutsDialog
+        {
+            onClosed:
+            {
+                appView.restoreActiveRouteFocus()
+                destroy()
+            }
+        }
     }
 
     Component

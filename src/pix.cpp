@@ -191,8 +191,13 @@ void FileWatcher::setUrl(const QString &newUrl)
     if (m_url == newUrl)
         return;
     m_url = newUrl;
-    m_watcher->removePaths(m_watcher->files());
-    m_watcher->addPath(QUrl(m_url).toLocalFile());
+    const auto watchedFiles = m_watcher->files();
+    if (!watchedFiles.isEmpty())
+        m_watcher->removePaths(watchedFiles);
+
+    const auto localFile = QUrl(m_url).toLocalFile();
+    if (!localFile.isEmpty())
+        m_watcher->addPath(localFile);
 
     Q_EMIT urlChanged();
 }
@@ -206,7 +211,6 @@ void FileWatcher::onFileChanged(const QString &url)
     }else
     {
 
-        m_watcher->removePaths(m_watcher->files());
         setUrl({});
         Q_EMIT fileDeleted();
     }
