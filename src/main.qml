@@ -503,6 +503,11 @@ Maui.ApplicationWindow
         ]
 
         headBar.rightContent: [
+            FB.FileOperationIndicator
+            {
+                transferCenter: appView.fileOperationDialog
+            },
+
             ToolButton
             {
                 visible: appView.viewerVisible && !root.verticallyBiasedLayout && appView.pixViewer.slideshowActive
@@ -671,6 +676,7 @@ Maui.ApplicationWindow
         AppView
         {
             id: appView
+            fileOperationAnchor: _shellPage.headBar
             anchors.top: _browserSearchBar.visible ? _browserSearchBar.bottom : parent.top
             anchors.left: parent.left
             anchors.right: parent.right

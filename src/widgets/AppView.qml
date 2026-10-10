@@ -17,12 +17,17 @@ import org.mauikit.imagetools.editor as ITEditor
 Item
 {
     id: control
+
+    property Item fileOperationAnchor: null
+    readonly property alias fileOperationDialog: _fileOperationDialog
+
     Keys.enabled: true
     Keys.forwardTo: _stackView
 
     FB.FileOperationDialog
     {
         id: _fileOperationDialog
+        anchorItem: control.fileOperationAnchor
         onClosed: control.restoreActiveRouteFocus()
     }
 
