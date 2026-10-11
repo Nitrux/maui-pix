@@ -18,18 +18,8 @@ Item
 {
     id: control
 
-    property Item fileOperationAnchor: null
-    readonly property alias fileOperationDialog: _fileOperationDialog
-
     Keys.enabled: true
     Keys.forwardTo: _stackView
-
-    FB.FileOperationDialog
-    {
-        id: _fileOperationDialog
-        anchorItem: control.fileOperationAnchor
-        onClosed: control.restoreActiveRouteFocus()
-    }
 
     property QtObject tagsDialog : null
 
@@ -421,7 +411,7 @@ Item
         {
             property var urls: []
 
-            title: i18np("Delete %1 file?", "Delete %1 files?", urls.length)
+            title: i18n("Delete")
             message: i18np("Are you sure you want to delete this file? This action cannot be undone.", "Are you sure you want to delete these %1 files? This action cannot be undone.", urls.length)
             template.iconSource: "user-trash"
             standardButtons: Dialog.Ok | Dialog.Cancel

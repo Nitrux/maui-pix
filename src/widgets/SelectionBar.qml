@@ -9,7 +9,6 @@ import QtQuick.Controls
 import QtQuick.Layouts
 
 import org.mauikit.controls as Maui
-import org.mauikit.filebrowsing as FB
 
 import "../widgets/views/Viewer/Viewer.js" as VIEWER
 
@@ -59,35 +58,5 @@ Maui.SelectionBar
         }
     }
 
-    hiddenActions:
-        [
-        Action
-        {
-            text: i18n("Export")
-            icon.name: "document-export"
-            onTriggered:
-            {
-                const pics = control.uris
-                let props = ({ 'browser.settings.onlyDirs' : true,
-                                 'singleSelection' : true,
-                                 'callback' : function(paths)
-                                 {
-                                     FB.FM.copy(pics, paths[0])
-                                 }})
-                var dialog = fmDialogComponent.createObject(root, props)
-                dialog.open()
-            }
-        },
-
-        Action
-        {
-            text: i18n("Remove")
-            icon.name: "edit-delete"
-            Maui.Controls.status: Maui.Controls.Negative
-
-            onTriggered: removeFiles(control.uris)
-
-        }
-    ]
 }
 
