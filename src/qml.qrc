@@ -1,0 +1,22 @@
+<RCC>
+    <qresource prefix="/app/maui/pix">
+        <file>main.qml</file>
+        <file>view_models/PixGrid.qml</file>
+        <file>view_models/PixPic.qml</file>
+        <file>widgets/views/Folders/FoldersView.qml</file>
+        <file>widgets/views/Gallery/GalleryView.qml</file>
+        <file>widgets/views/Tags/TagsView.qml</file>
+        <file>widgets/views/Viewer/PixViewer.qml</file>
+        <file>widgets/views/Viewer/OCROverlay.qml</file>
+        <file>widgets/views/Viewer/Viewer.qml</file>
+        <file>widgets/views/Viewer/Viewer.js</file>
+        <file>widgets/views/Viewer/GalleryRoll.qml</file>
+        <file>widgets/views/Tags/TagsSidebar.qml</file>
+        <file>view_models/PixMenu.qml</file>
+        <file>widgets/SelectionBar.qml</file>
+        <file>widgets/SettingsDialog.qml</file>
+        <file>widgets/ShortcutsDialog.qml</file>
+        <file>widgets/AppView.qml</file>
+        <file>widgets/views/CollectionView.qml</file>
+    </qresource>
+</RCC>

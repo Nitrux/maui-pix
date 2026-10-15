@@ -30,6 +30,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <QFileSystemWatcher>
 
 class Gallery;
+Q_DECLARE_OPAQUE_POINTER(Gallery *)
+
 class Pix : public QObject
 {
     Q_OBJECT

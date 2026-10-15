@@ -37,7 +37,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <QGuiApplication>
 #include <QSurfaceFormat>
 
-#include "../pix_version.h"
+#include "pix_version.h"
 
 #include <MauiKit4/Core/mauiapp.h>
 #include <MauiKit4/FileBrowsing/fmstatic.h>
@@ -45,6 +45,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <MauiKit4/ImageTools/moduleinfo.h>
 
 #include <KLocalizedString>
+#include <KLocalizedQmlContext>
 
 #include "models/folders/folders.h"
 #include "models/folders/placesmodel.h"
@@ -210,7 +211,7 @@ Q_DECL_EXPORT int main(int argc, char *argv[])
         },
         Qt::QueuedConnection);
 
-    engine.rootContext()->setContextObject(new KLocalizedContext(&engine));
+    engine.rootContext()->setContextObject(new KLocalizedQmlContext(&engine));
 
     engine.rootContext()->setContextProperty("initModule", arguments.first);
     engine.rootContext()->setContextProperty("initData", QUrl::toStringList(arguments.second));
