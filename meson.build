@@ -57,7 +57,8 @@ foreach po_file : po_files
         custom_target(
             'translation-' + locale,
             input: po_file,
-            output: locale / (translation_domain + '.mo'),
+            output: translation_domain + '.mo',
+            build_subdir: locale,
             command: [msgfmt, '--check', '-o', '@OUTPUT@', '@INPUT@'],
             install: true,
             install_dir: get_option('localedir') / locale / 'LC_MESSAGES',
