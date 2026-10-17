@@ -69,7 +69,8 @@ target_link_libraries(${PROJECT_NAME}
     Qt6::Qml
     Qt6::Positioning
     Qt6::Concurrent
-    KF6::I18n)
+    KF6::I18n
+    KF6::I18nQml)
 
 target_link_libraries(${PROJECT_NAME}
     PRIVATE
