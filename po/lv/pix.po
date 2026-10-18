@@ -225,7 +225,7 @@ msgstr "Atlasīt"
 
 #: src/view_models/PixMenu.qml:92
 #, kde-format
-msgid "Open in New Window"
+msgid "Open in new window"
 msgstr "Atvērt jaunā logā"
 
 #: src/view_models/PixMenu.qml:107
@@ -741,7 +741,7 @@ msgstr "Saistībā ar šo birku nav bilžu"
 
 #: src/widgets/views/Viewer/OCROverlay.qml:47
 #, kde-format
-msgid "Select All"
+msgid "Select all"
 msgstr "Atlasīt visu"
 
 #: src/widgets/views/Viewer/OCROverlay.qml:53

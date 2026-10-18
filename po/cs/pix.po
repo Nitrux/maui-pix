@@ -224,7 +224,7 @@ msgstr "Vybrat"
 
 #: src/view_models/PixMenu.qml:92
 #, kde-format
-msgid "Open in New Window"
+msgid "Open in new window"
 msgstr "Otevřít v novém okně"
 
 #: src/view_models/PixMenu.qml:107
@@ -733,7 +733,7 @@ msgstr "Zde nejsou žádné obrázky spojené se značkou"
 
 #: src/widgets/views/Viewer/OCROverlay.qml:47
 #, kde-format
-msgid "Select All"
+msgid "Select all"
 msgstr "Vybrat vše"
 
 #: src/widgets/views/Viewer/OCROverlay.qml:53

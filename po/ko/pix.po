@@ -222,7 +222,7 @@ msgstr "선택"
 
 #: src/view_models/PixMenu.qml:92
 #, kde-format
-msgid "Open in New Window"
+msgid "Open in new window"
 msgstr "새 창으로 열기"
 
 #: src/view_models/PixMenu.qml:107
@@ -723,7 +723,7 @@ msgstr "태그와 연결된 그림 없음"
 
 #: src/widgets/views/Viewer/OCROverlay.qml:47
 #, kde-format
-msgid "Select All"
+msgid "Select all"
 msgstr "모두 선택"
 
 #: src/widgets/views/Viewer/OCROverlay.qml:53

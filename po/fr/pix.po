@@ -223,7 +223,7 @@ msgstr "Sélectionner"
 
 #: src/view_models/PixMenu.qml:92
 #, kde-format
-msgid "Open in New Window"
+msgid "Open in new window"
 msgstr "Ouvrir dans une nouvelle fenêtre"
 
 #: src/view_models/PixMenu.qml:107
@@ -740,7 +740,7 @@ msgstr "Aucune image n'est associée à cette étiquette."
 
 #: src/widgets/views/Viewer/OCROverlay.qml:47
 #, kde-format
-msgid "Select All"
+msgid "Select all"
 msgstr "Tout sélectionner"
 
 #: src/widgets/views/Viewer/OCROverlay.qml:53

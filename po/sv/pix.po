@@ -225,7 +225,7 @@ msgstr "Markera"
 
 #: src/view_models/PixMenu.qml:92
 #, kde-format
-msgid "Open in New Window"
+msgid "Open in new window"
 msgstr "Öppna i nytt fönster"
 
 #: src/view_models/PixMenu.qml:107
@@ -735,7 +735,7 @@ msgstr "Det finns inga bilder som hör ihop med etiketten"
 
 #: src/widgets/views/Viewer/OCROverlay.qml:47
 #, kde-format
-msgid "Select All"
+msgid "Select all"
 msgstr "Markera alla"
 
 #: src/widgets/views/Viewer/OCROverlay.qml:53

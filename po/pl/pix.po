@@ -223,9 +223,9 @@ msgid "Select"
 msgstr "Zaznacz"
 
 #: src/view_models/PixMenu.qml:92
-#, kde-format
-msgid "Open in New Window"
-msgstr ""
+#, fuzzy, kde-format
+msgid "Open in new window"
+msgstr "Otwórz w nowym oknie"
 
 #: src/view_models/PixMenu.qml:107
 #, kde-format
@@ -743,7 +743,7 @@ msgstr "Nie ma żadnych zdjęć przypisanych temu znacznikowi"
 #: src/widgets/views/Viewer/OCROverlay.qml:47
 #, fuzzy, kde-format
 #| msgid "Select"
-msgid "Select All"
+msgid "Select all"
 msgstr "Zaznacz"
 
 #: src/widgets/views/Viewer/OCROverlay.qml:53

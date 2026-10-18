@@ -222,9 +222,9 @@ msgid "Select"
 msgstr ""
 
 #: src/view_models/PixMenu.qml:92
-#, kde-format
-msgid "Open in New Window"
-msgstr ""
+#, fuzzy, kde-format
+msgid "Open in new window"
+msgstr "ဝင်းဒိုးအသစ်တွင် ဖွင့်ရန်"
 
 #: src/view_models/PixMenu.qml:107
 #, kde-format
@@ -722,9 +722,9 @@ msgid "There're no pics associated with the tag"
 msgstr ""
 
 #: src/widgets/views/Viewer/OCROverlay.qml:47
-#, kde-format
-msgid "Select All"
-msgstr ""
+#, fuzzy, kde-format
+msgid "Select all"
+msgstr "အားလုံးရွေးချယ်ရန်"
 
 #: src/widgets/views/Viewer/OCROverlay.qml:53
 #, kde-format

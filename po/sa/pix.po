@@ -224,9 +224,9 @@ msgid "Select"
 msgstr "विचि"
 
 #: src/view_models/PixMenu.qml:92
-#, kde-format
-msgid "Open in New Window"
-msgstr ""
+#, fuzzy, kde-format
+msgid "Open in new window"
+msgstr "नूतने वातायने उद्घाटयतु"
 
 #: src/view_models/PixMenu.qml:107
 #, kde-format
@@ -735,7 +735,7 @@ msgstr "टैग् इत्यनेन सह सम्बद्धाः �
 #: src/widgets/views/Viewer/OCROverlay.qml:47
 #, fuzzy, kde-format
 #| msgid "Select"
-msgid "Select All"
+msgid "Select all"
 msgstr "विचि"
 
 #: src/widgets/views/Viewer/OCROverlay.qml:53

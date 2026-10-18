@@ -222,9 +222,9 @@ msgid "Select"
 msgstr "Select"
 
 #: src/view_models/PixMenu.qml:92
-#, kde-format
-msgid "Open in New Window"
-msgstr ""
+#, fuzzy, kde-format
+msgid "Open in new window"
+msgstr "Open in new window"
 
 #: src/view_models/PixMenu.qml:107
 #, kde-format
@@ -733,7 +733,7 @@ msgstr "There are no pictures associated with the tag"
 #: src/widgets/views/Viewer/OCROverlay.qml:47
 #, fuzzy, kde-format
 #| msgid "Select"
-msgid "Select All"
+msgid "Select all"
 msgstr "Select"
 
 #: src/widgets/views/Viewer/OCROverlay.qml:53

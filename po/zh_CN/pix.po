@@ -221,9 +221,9 @@ msgid "Select"
 msgstr "选择"
 
 #: src/view_models/PixMenu.qml:92
-#, kde-format
-msgid "Open in New Window"
-msgstr ""
+#, fuzzy, kde-format
+msgid "Open in new window"
+msgstr "在新窗口中打开"
 
 #: src/view_models/PixMenu.qml:107
 #, kde-format
@@ -246,9 +246,9 @@ msgid "Save as"
 msgstr "另存为"
 
 #: src/view_models/PixMenu.qml:152
-#, kde-format
+#, fuzzy, kde-format
 msgid "Open with"
-msgstr ""
+msgstr "打开方式"
 
 #: src/view_models/PixMenu.qml:160
 #, kde-format
@@ -720,9 +720,9 @@ msgid "There're no pics associated with the tag"
 msgstr "该标签没有关联图像"
 
 #: src/widgets/views/Viewer/OCROverlay.qml:47
-#, kde-format
-msgid "Select All"
-msgstr ""
+#, fuzzy, kde-format
+msgid "Select all"
+msgstr "全选"
 
 #: src/widgets/views/Viewer/OCROverlay.qml:53
 #, kde-format

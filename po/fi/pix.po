@@ -226,7 +226,7 @@ msgstr "Valitse"
 
 #: src/view_models/PixMenu.qml:92
 #, kde-format
-msgid "Open in New Window"
+msgid "Open in new window"
 msgstr "Avaa uuteen ikkunaan"
 
 # *** TARKISTA: Tässä olisi hyvä tietää, mikä ”%1” on – tiedosto, kansio, albumi, osoitekirja…?
@@ -734,7 +734,7 @@ msgstr "Tähän luokitukseen ei ole kytketty kuvia"
 
 #: src/widgets/views/Viewer/OCROverlay.qml:47
 #, kde-format
-msgid "Select All"
+msgid "Select all"
 msgstr "Valitse kaikki"
 
 #: src/widgets/views/Viewer/OCROverlay.qml:53

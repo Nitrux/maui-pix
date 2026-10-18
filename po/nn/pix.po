@@ -224,9 +224,9 @@ msgid "Select"
 msgstr "Vel"
 
 #: src/view_models/PixMenu.qml:92
-#, kde-format
-msgid "Open in New Window"
-msgstr ""
+#, fuzzy, kde-format
+msgid "Open in new window"
+msgstr "Opna i nytt vindauge"
 
 #: src/view_models/PixMenu.qml:107
 #, kde-format
@@ -249,9 +249,9 @@ msgid "Save as"
 msgstr ""
 
 #: src/view_models/PixMenu.qml:152
-#, kde-format
+#, fuzzy, kde-format
 msgid "Open with"
-msgstr ""
+msgstr "Opna med"
 
 #: src/view_models/PixMenu.qml:160
 #, kde-format
@@ -736,7 +736,7 @@ msgstr ""
 #: src/widgets/views/Viewer/OCROverlay.qml:47
 #, fuzzy, kde-format
 #| msgid "Select"
-msgid "Select All"
+msgid "Select all"
 msgstr "Vel"
 
 #: src/widgets/views/Viewer/OCROverlay.qml:53

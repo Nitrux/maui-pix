@@ -223,9 +223,9 @@ msgid "Select"
 msgstr "Elekti"
 
 #: src/view_models/PixMenu.qml:92
-#, kde-format
-msgid "Open in New Window"
-msgstr ""
+#, fuzzy, kde-format
+msgid "Open in new window"
+msgstr "Malfermi en nova fenestro"
 
 #: src/view_models/PixMenu.qml:107
 #, kde-format
@@ -735,7 +735,7 @@ msgstr "Ne estas bildoj asociitaj kun la etikedo"
 #: src/widgets/views/Viewer/OCROverlay.qml:47
 #, fuzzy, kde-format
 #| msgid "Select"
-msgid "Select All"
+msgid "Select all"
 msgstr "Elekti"
 
 #: src/widgets/views/Viewer/OCROverlay.qml:53
