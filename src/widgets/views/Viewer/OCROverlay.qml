@@ -110,7 +110,7 @@ Item
 
         Action
         {
-            text: i18n("Select All")
+            text: i18n("Select all")
             onTriggered: selectAll()
         }
 
