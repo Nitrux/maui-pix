@@ -395,6 +395,9 @@ Maui.ApplicationWindow
         background: null
         headBar.visible: !appView.editorVisible
         headBar.forceCenterMiddleContent: false
+        headBar.preferredHeight: Maui.Style.rowHeightAlt
+        headBar.topPadding: Maui.Style.defaultPadding
+        headBar.bottomPadding: Maui.Style.defaultPadding
         altHeader: appView.viewerVisible && Maui.Handy.isMobile
         floatingHeader: appView.viewerVisible
         autoHideHeader: appView.viewerVisible && appView.pixViewer.viewer.imageZooming
@@ -574,6 +577,9 @@ Maui.ApplicationWindow
         ]
 
         footBar.visible: footerControlsVisible
+        footBar.preferredHeight: Maui.Style.rowHeightAlt
+        footBar.topPadding: Maui.Style.defaultPadding
+        footBar.bottomPadding: Maui.Style.defaultPadding
         footBar.forceCenterMiddleContent: true
 
         footBar.leftContent: []

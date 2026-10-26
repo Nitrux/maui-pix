@@ -325,6 +325,7 @@ Item
         id: _infoDialogComponent
         IT.ImageInfoDialog
         {
+            page.title: i18n("File Information")
             onGpsEdited:(url) => Pix.Collection.allImagesModel.updateGpsTag(url)
             onClosed:
             {
