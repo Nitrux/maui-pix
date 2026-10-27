@@ -415,9 +415,10 @@ Item
             title: i18n("Delete")
             message: i18np("Are you sure you want to delete this file? This action cannot be undone.", "Are you sure you want to delete these %1 files? This action cannot be undone.", urls.length)
             template.iconSource: "user-trash"
-            standardButtons: Dialog.Ok | Dialog.Cancel
+            standardButtons: Dialog.Discard | Dialog.Cancel
+            Component.onCompleted: standardButton(Dialog.Discard).text = i18n("Delete")
 
-            onAccepted:
+            onDiscarded:
             {
                 Pix.Collection.allImagesModel.removeFiles(urls)
                 if (_pixViewer.active)
