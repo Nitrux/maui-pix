@@ -47,6 +47,9 @@ Maui.ApplicationWindow
     background: null
 
     readonly property bool fullScreen : root.visibility === Window.FullScreen
+    readonly property bool fullScreenToolbarAutoHide: viewerSettings.autoHideFullscreenToolbar && fullScreen && appView.viewerVisible
+    readonly property bool fullScreenToolbarVisible: !fullScreenToolbarAutoHide || _fullScreenTopRevealArea.containsMouse
+    property real fullScreenToolbarOpacity: fullScreenToolbarVisible ? 1 : 0
     readonly property alias selectionBox : _selectionBar
     property bool selectionMode : false
     property bool browserSearchExpanded: false
@@ -85,6 +88,7 @@ Maui.ApplicationWindow
     {
         id: viewerSettings
         property bool tagBarVisible : true
+        property bool autoHideFullscreenToolbar: false
         property bool previewBarVisible : false
         property bool enableOCR: Maui.Handy.isLinux
         property int ocrConfidenceThreshold: 40
@@ -388,19 +392,44 @@ Maui.ApplicationWindow
         border.width: 1
     }
 
+    Behavior on fullScreenToolbarOpacity
+    {
+        NumberAnimation
+        {
+            duration: 180
+            easing.type: Easing.InOutQuad
+        }
+    }
+
+    MouseArea
+    {
+        id: _fullScreenTopRevealArea
+        anchors.top: parent.top
+        anchors.left: parent.left
+        anchors.right: parent.right
+        height: Math.max(Maui.Style.units.gridUnit * 4, _shellPage.headBar.height + Maui.Style.space.big)
+        acceptedButtons: Qt.NoButton
+        hoverEnabled: true
+        enabled: fullScreenToolbarAutoHide
+        visible: enabled
+        z: 1200
+    }
+
     Maui.Page
     {
         id: _shellPage
         anchors.fill: parent
         background: null
-        headBar.visible: !appView.editorVisible
+        headBar.visible: !appView.editorVisible && (!fullScreenToolbarAutoHide || fullScreenToolbarOpacity > 0.01)
+        headBar.enabled: fullScreenToolbarOpacity > 0.01
+        headBar.opacity: fullScreenToolbarOpacity
         headBar.forceCenterMiddleContent: false
         headBar.preferredHeight: Maui.Style.rowHeightAlt
         headBar.topPadding: Maui.Style.defaultPadding
         headBar.bottomPadding: Maui.Style.defaultPadding
         altHeader: appView.viewerVisible && Maui.Handy.isMobile
         floatingHeader: appView.viewerVisible
-        autoHideHeader: appView.viewerVisible && appView.pixViewer.viewer.imageZooming
+        autoHideHeader: appView.viewerVisible && !root.fullScreen && appView.pixViewer.viewer.imageZooming
         headerMargins: Maui.Style.contentMargins
         footerMargins: Maui.Style.contentMargins
 

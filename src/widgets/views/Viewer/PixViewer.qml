@@ -150,10 +150,12 @@ Maui.Page
     Maui.Controls.showCSD: true
     altHeader: Maui.Handy.isMobile
     floatingHeader: true
-    autoHideHeader: viewer.imageZooming
+    autoHideHeader: !root.fullScreen && viewer.imageZooming
     headerMargins: Maui.Style.contentMargins
 
-    headBar.visible: useInternalChrome
+    headBar.visible: useInternalChrome && (!root.fullScreenToolbarAutoHide || root.fullScreenToolbarOpacity > 0.01)
+    headBar.enabled: root.fullScreenToolbarOpacity > 0.01
+    headBar.opacity: root.fullScreenToolbarOpacity
 
     headBar.leftContent: [
         ToolButton
@@ -469,7 +471,8 @@ Maui.Page
         {
             id: _tagsbarLoader
             asynchronous: true
-            active: !holder.visible && viewerSettings.tagBarVisible && !fullScreen
+            active: !holder.visible && viewerSettings.tagBarVisible && !root.fullScreen
+            visible: active
             Layout.fillWidth: true
 
             sourceComponent: FB.TagsBar

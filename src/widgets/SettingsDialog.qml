@@ -275,6 +275,18 @@ Maui.SettingsDialog
 
         Maui.FlexSectionItem
         {
+            label1.text: i18n("Hide Viewer Chrome in Full Screen")
+            label2.text: i18n("Hide the header while viewing images in full screen.")
+
+            Switch
+            {
+                checked: viewerSettings.autoHideFullscreenToolbar
+                onToggled: viewerSettings.autoHideFullscreenToolbar = checked
+            }
+        }
+
+        Maui.FlexSectionItem
+        {
             label1.text: i18n("Tag Bar")
             label2.text: i18n("Easy way to add, remove and modify the tags of the current image.")
 
