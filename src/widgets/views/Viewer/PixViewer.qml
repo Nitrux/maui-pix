@@ -71,7 +71,14 @@ Maui.Page
     }
 
     property bool slideshowActive: false
-    onSlideshowActiveChanged: if (!slideshowActive) { _advanceTimer.stop(); _transitionOverlay.opacity = 0 }
+    onSlideshowActiveChanged:
+    {
+        portalInhibit.setInhibited(control, control.slideshowActive)
+        if (!slideshowActive) { _advanceTimer.stop(); _transitionOverlay.opacity = 0 }
+    }
+
+    Component.onCompleted: portalInhibit.setInhibited(control, control.slideshowActive)
+    Component.onDestruction: portalInhibit.setInhibited(control, false)
 
     // Fade duration in ms — must match the Behavior on _transitionOverlay.opacity.
     readonly property int _fadeDuration: 600

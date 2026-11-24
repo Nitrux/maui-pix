@@ -7,6 +7,8 @@ remove_definitions(-DQT_NO_CAST_FROM_ASCII -DQT_STRICT_ITERATORS -DQT_NO_CAST_FR
 
 set(pix_SRCS
     main.cpp
+    portalinhibit.cpp
+    portalinhibit.h
     pix.cpp pix.h
     models/gallery/gallery.cpp
     models/folders/folders.cpp
@@ -66,6 +68,7 @@ target_link_libraries(${PROJECT_NAME}
     MauiKit4::FileBrowsing
     MauiKit4::ImageTools
     Qt6::Core
+    Qt6::DBus
     Qt6::Qml
     Qt6::Positioning
     Qt6::Concurrent

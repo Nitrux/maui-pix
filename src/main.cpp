@@ -55,6 +55,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "pixserver.h"
 
 #include "pix.h"
+#include "portalinhibit.h"
 
 #define PIX_URI "org.maui.pix"
 
@@ -179,6 +180,7 @@ Q_DECL_EXPORT int main(int argc, char *argv[])
 
     auto server = std::make_unique<Server>();
 
+    PortalInhibit portalInhibit(8, QStringLiteral("Image slideshow"), &app);
     QQmlApplicationEngine engine;
     QUrl url(QStringLiteral("qrc:/app/maui/pix/main.qml"));
     QObject::connect(
@@ -212,6 +214,7 @@ Q_DECL_EXPORT int main(int argc, char *argv[])
         Qt::QueuedConnection);
 
     engine.rootContext()->setContextObject(new KLocalizedQmlContext(&engine));
+    engine.rootContext()->setContextProperty("portalInhibit", &portalInhibit);
 
     engine.rootContext()->setContextProperty("initModule", arguments.first);
     engine.rootContext()->setContextProperty("initData", QUrl::toStringList(arguments.second));
